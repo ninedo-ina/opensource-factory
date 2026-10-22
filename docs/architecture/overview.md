@@ -667,6 +667,31 @@ admin /star-trends → GET /api/star-trends?days=30&scope=trending|my&language=�
 `scope=my` 返回 `portfolioRepos` / `coverage`，明确只统计收藏仓库中上过热榜的项目。
 只读聚合，不新增表 / 迁移，也不依赖 VPS。
 
+### 3.34 开放 API 个人令牌（M8-05）
+
+```
+admin 设置 → 开放 API（Cookie 会话）
+  → POST /api/open/tokens {label, scopes, expiresInDays}
+       ↳ 生成 ofa_ + 64 hex，明文只返回一次；D1 仅存 sha256(token)
+  → GET  /api/open/tokens        列表（hint / scopes / 最近使用 / 过期时间）
+  → DELETE /api/open/tokens/:id  软撤销（revoked_at）
+
+CLI / 脚本 / Raycast（Authorization: Bearer ofa_…）
+  → edge /api/open/v1/* 中间件
+       ↳ 校验格式 → 查 token_hash → 撤销 / 过期检查 → 加载用户
+       ↳ 更新 last_used_at（按分钟节流）
+       ↳ 令牌维度固定窗口限流（默认 120 次/分钟，X-RateLimit-*）
+       ↳ 校验 read 作用域；写接口额外要求 write
+  → D1 查询全部带 user_id = 当前用户；热榜为公开数据
+```
+
+- 令牌表 `open_api_tokens`（迁移 `0021`）与浏览器扩展令牌相互独立，避免通用开放 API 绑定扩展场景；
+- 作用域只有 `read` / `write` 两档，`write` 隐含 `read`；写接口复用 `my_repositories` 既有收藏路径，
+  他人已收藏同一 `owner/repo` 返回 409；
+- 单用户最多 20 个有效令牌，支持 30 / 90 / 180 / 365 天或永不过期（默认 90 天）；
+- 令牌级限流叠加全局 read / write 桶；D1 限流异常时 fail-open，不影响业务可用性；
+- 使用指南见 [open-api.md](../guides/open-api.md)。
+
 ## 4. 接口边界
 
 ### 4.1 admin ↔ edge（JSON over HTTPS，Cookie 会话）
@@ -743,6 +768,23 @@ admin /star-trends → GET /api/star-trends?days=30&scope=trending|my&language=�
 | `/api/reports/:id` | GET | 报告详情（统计 + 分节 + Markdown；仅本人可见） |
 | `/api/reports/:id/markdown` | GET | 下载报告 Markdown（`text/markdown` 附件） |
 | `/api/reports/generate` | POST | 立即生成当前周期报告（`kind=weekly\|monthly`） |
+| `/api/open/tokens` | GET | 当前用户开放 API 令牌列表（不含明文，M8-05） |
+| `/api/open/tokens` | POST | 创建个人令牌（`label` / `scopes` / `expiresInDays`；明文只返回一次） |
+| `/api/open/tokens/:id` | DELETE | 撤销个人令牌（软删，立即失效） |
+
+**Bearer 开放 API（`Authorization: Bearer ofa_…`，M8-05）**
+
+| 端点 | 方法 | 作用域 | 说明 |
+| --- | --- | --- | --- |
+| `/api/open/v1/me` | GET | read | 当前用户与令牌信息 |
+| `/api/open/v1/repos` | GET | read | 收藏列表（`q` / `category` / `tag` / `language` / `sort` / `limit` / `offset`） |
+| `/api/open/v1/repos/:owner/:name` | GET | read | 收藏详情（仅本人） |
+| `/api/open/v1/repos` | POST | write | 收藏仓库（`fullName` 或 `url`；幂等，他人已收藏 409） |
+| `/api/open/v1/categories` | GET | read | 分类与标签（按当前用户计数） |
+| `/api/open/v1/recommendations` | GET | read | 推荐列表（`status` / `limit` / `offset`） |
+| `/api/open/v1/trending` | GET | read | 公开热榜（`date` / `language` / `limit`） |
+| `/api/open/v1/search` | GET | read | 关键词检索（`q` / `scope=my\|trending\|all` / `language` / `limit`） |
+| `/api/open/v1/stats` | GET | read | 收藏统计概览（总数 / Star / 语言 / 分类 / 标签） |
 
 ### 4.2 edge ↔ vps（内部 API，`X-Internal-Token`）
 

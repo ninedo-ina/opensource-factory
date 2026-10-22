@@ -609,6 +609,26 @@ VPS 本地 SQLite 表（M2-04），不复制到 D1；用于留存样本、人工
 `my_repositories` 同步保存 `latest_release_tag` / `latest_release_name` / `latest_release_url` /
 `latest_release_at` / `latest_release_checked_at` 作为增量扫描基线（首次扫描只记基线，不提醒历史版本）。
 
+### 3.25 `open_api_tokens` 开放 API 个人令牌（D1，迁移 `0021`）
+
+> M8-05：用户在设置页自助创建，用于 CLI / 脚本 / 第三方工具以 Bearer 方式访问自己的数据；与浏览器扩展令牌相互独立。
+
+| 字段 | 说明 |
+| --- | --- |
+| id TEXT PK | `oat_` + 16 位十六进制 |
+| user_id TEXT | 所属用户（所有开放 API 查询按此隔离） |
+| label TEXT | 备注，默认「开放 API」，≤60 字 |
+| token_hash TEXT UNIQUE | `sha256(明文令牌)`；明文 `ofa_` + 64 hex 只在创建时返回一次 |
+| hint TEXT | 尾号提示，如 `ofa_…a1b2` |
+| scopes TEXT | 逗号分隔的 `read` / `write`（`write` 隐含 `read`） |
+| expires_at TEXT | ISO 时间；NULL 表示永不过期（默认 90 天） |
+| created_at TEXT | 创建时间 |
+| last_used_at TEXT | 最近成功鉴权时间（按分钟节流更新） |
+| revoked_at TEXT | 撤销时间；非 NULL 立即失效 |
+
+索引 `(user_id, created_at DESC)` 支撑设置页列表，`token_hash` 唯一索引支撑 Bearer 鉴权查询。
+单用户最多 20 个有效令牌；撤销后不再计入上限。
+
 ## 4. 索引策略
 
 | 表 | 索引 | 用途 |
@@ -642,6 +662,7 @@ VPS 本地 SQLite 表（M2-04），不复制到 D1；用于留存样本、人工
 | category_suggestions | `(user_id, repo_id, category_name)` UNIQUE、`(user_id, status, score DESC)`、`(user_id, repo_id)` | 建议生成幂等 / 列表 / 单仓库查询 |
 | curated_reports | `(user_id, kind, period_start)` UNIQUE、`(user_id, generated_at DESC)` | 报告幂等 upsert / 归档列表 |
 | repo_updates | `(user_id, repo_id, version)` UNIQUE、`(user_id, status, detected_at DESC)`、`(user_id, type, detected_at DESC)` | 更新提醒幂等 / 列表与未读数 / 类型筛选（M7-04） |
+| open_api_tokens | `(user_id, created_at DESC)`、`token_hash` UNIQUE | 设置页令牌列表 / Bearer 鉴权查询（M8-05） |
 
 ## 5. 向量数据（M3）
 

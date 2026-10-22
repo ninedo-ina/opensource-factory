@@ -56,6 +56,7 @@ import { recordSecurityEvent } from './security/login-guard.ts';
 import { normalizeRoute, recordRequestMetric, shouldRecordMetric } from './monitoring/metrics';
 import licensesRoutes from './routes/licenses';
 import internalLicensesRoutes from './routes/internal-licenses';
+import { openApiTokens, openApiV1 } from './routes/open-api';
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -200,6 +201,9 @@ app.route('/api/reports', reportsRoutes);
 app.route('/api/internal/reports', internalReports);
 app.route('/api/repo-updates', repoUpdatesRoutes);
 app.route('/api/internal/repo-updates', internalRepoUpdates);
+// 开放 API（M8-05）：会话管理令牌 + Bearer 只读/写入接口
+app.route('/api/open/tokens', openApiTokens);
+app.route('/api/open/v1', openApiV1);
 
 // 404
 app.notFound((c) =>

@@ -26,6 +26,8 @@ export interface Env {
   RATE_LIMIT_READ_PER_MINUTE?: string;
   RATE_LIMIT_WRITE_PER_MINUTE?: string;
   RATE_LIMIT_AUTH_PER_MINUTE?: string;
+  // 开放 API 个人令牌限流（M8-05）：默认 120 次/分钟
+  OPEN_API_RATE_PER_MINUTE?: string;
   // 登录防护（M5-05）
   LOGIN_MAX_FAILURES?: string;
   LOGIN_FAILURE_WINDOW_SECONDS?: string;
@@ -50,6 +52,20 @@ export interface SessionRow {
   user_id: string;
   created_at: string;
   expires_at: string;
+}
+
+/** 开放 API 个人令牌（M8-05，迁移 0021；仅存 token_hash） */
+export interface OpenApiTokenRow {
+  id: string;
+  user_id: string;
+  label: string | null;
+  token_hash: string;
+  hint: string;
+  scopes: string | null;
+  expires_at: string | null;
+  created_at: string;
+  last_used_at: string | null;
+  revoked_at: string | null;
 }
 
 export interface TagSuggestionRow {
@@ -746,7 +762,8 @@ export interface CuratedReport extends ReportSummary {
   markdown: string;
 }
 
-/** Hono 上下文变量（挂载当前用户） */
+/** Hono 上下文变量（挂载当前用户 / 开放 API 令牌） */
 export interface Variables {
   user: UserRow | null;
+  openApiToken?: OpenApiTokenRow | null;
 }

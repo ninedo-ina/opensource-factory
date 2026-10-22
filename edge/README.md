@@ -1,6 +1,6 @@
 # OpenFactory Edge API
 
-「开源项目工厂 / OpenFactory」的边缘 API 层，运行在 **Cloudflare Workers** 上，为管理后台（admin 前端）提供：GitHub OAuth 登录、用户会话、以及仓库 / 趋势 / 推荐 / 分类 / 仪表盘 / 知识库导出等接口。
+「开源项目工厂 / OpenFactory」的边缘 API 层，运行在 **Cloudflare Workers** 上，为管理后台（admin 前端）提供：GitHub OAuth 登录、用户会话、以及仓库 / 趋势 / 推荐 / 分类 / 仪表盘 / 知识库导出等接口；同时通过 `/api/open/v1` 提供个人令牌（Bearer）开放 API（M8-05）。
 
 ## 定位
 
@@ -48,7 +48,8 @@ edge/
 │   ├── 0017_category_suggestions.sql  # 自动分类建议（M7-02）
 │   ├── 0018_curated_reports.sql  # 每周 / 月度精选报告（M7-03）
 │   ├── 0019_repo_updates.sql  # 收藏项目更新提醒（M7-04）
-│   └── 0020_rerank.sql  # 精排分 / 名次 / 明细字段（M7-07）
+│   ├── 0020_rerank.sql  # 精排分 / 名次 / 明细字段（M7-07）
+│   └── 0021_open_api_tokens.sql  # 开放 API 个人令牌（M8-05）
 └── src/
     ├── index.ts          # Hono 入口：CORS、日志、/healthz、路由挂载、Cron scheduled handler
     ├── types.ts          # Env 绑定 + 数据库行 + API 响应实体
@@ -200,6 +201,7 @@ npm run test:m2 -- --strict \
 | `LOGIN_MAX_FAILURES` | vars | 登录失败阈值（默认 10 次 / 15 分钟） |
 | `LOGIN_FAILURE_WINDOW_SECONDS` | vars | 登录失败统计窗口（默认 900 秒） |
 | `LOGIN_LOCKOUT_SECONDS` | vars | 登录锁定时长（默认 900 秒） |
+| `OPEN_API_RATE_PER_MINUTE` | vars | 开放 API 个人令牌每分钟配额（默认 120，M8-05） |
 
 ## 接口约定
 
@@ -278,6 +280,18 @@ npm run test:m2 -- --strict \
 | `POST /api/model-routes/reset` | 恢复全部任务默认路由（需登录） |
 | `POST /api/model-routes/upgrade` | 应用任务最佳可用升级（需登录） |
 | `GET /api/model-routes/health` | Ollama / DeepSeek / 规则引擎健康状态（需登录） |
+| `GET /api/open/tokens` | 当前用户开放 API 令牌列表（不含明文；M8-05） |
+| `POST /api/open/tokens` | 创建个人令牌（`label` / `scopes` / `expiresInDays`；明文只返回一次） |
+| `DELETE /api/open/tokens/:id` | 撤销个人令牌（软删，立即失效） |
+| `GET /api/open/v1/me` | Bearer 开放 API：当前用户与令牌信息（`Authorization: Bearer ofa_…`） |
+| `GET /api/open/v1/repos` | Bearer：收藏列表（`q` / `category` / `tag` / `language` / `sort` / `limit` / `offset`） |
+| `GET /api/open/v1/repos/:owner/:name` | Bearer：收藏详情（仅本人） |
+| `POST /api/open/v1/repos` | Bearer：收藏仓库（需 `write` 作用域；幂等，他人已收藏 409） |
+| `GET /api/open/v1/categories` | Bearer：分类与标签 |
+| `GET /api/open/v1/recommendations` | Bearer：推荐列表（`status` / `limit` / `offset`） |
+| `GET /api/open/v1/trending` | Bearer：公开热榜（`date` / `language` / `limit`） |
+| `GET /api/open/v1/search` | Bearer：关键词检索（`q` / `scope` / `language` / `limit`） |
+| `GET /api/open/v1/stats` | Bearer：收藏统计概览 |
 | `POST /api/search/fulltext` | `SearchResponse`：body `{query, topK?, scope?, offset?}`；mode 为 `fts` / `like`（VPS FTS5，短词 LIKE 回退）/ `keyword`（VPS 不可用降级）；`my` 结果按 D1 `user_id` 过滤；条目可带 `snippet` / `matchedTerms`（M6-01） |
 | `GET /api/similar` | `SimilarResponse`：query `source=my\|trending` / `repoId` / `topK` / `scope` / `minScore` / `excludeSaved`；mode 为 `local`（VPS 向量近邻）/ `keyword`（D1 同语言 + 技术栈兜底）；`source=my` 需登录且只返回当前用户仓库 |
 | `POST /api/duplicates/scan` | `DuplicateScanResponse`：body `{scope, minScore?, maxClusters?}`；mode 为 `vps` / `hybrid` / `local`；返回簇、成员信号、保留项与字段合并建议；需登录，`my` 成员二次校验归属 |

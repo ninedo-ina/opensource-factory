@@ -372,3 +372,22 @@ CREATE INDEX IF NOT EXISTS idx_repo_updates_user_status_detected
     ON repo_updates (user_id, status, detected_at DESC);
 CREATE INDEX IF NOT EXISTS idx_repo_updates_user_type_detected
     ON repo_updates (user_id, type, detected_at DESC);
+
+-- ── 开放 API 个人令牌（M8-05，迁移 0021）──────────────────────
+CREATE TABLE IF NOT EXISTS open_api_tokens (
+    id TEXT PRIMARY KEY,                 -- oat_ + 16 位十六进制
+    user_id TEXT NOT NULL,
+    label TEXT,                          -- 备注，默认「开放 API」
+    token_hash TEXT NOT NULL UNIQUE,     -- sha256(明文令牌)，明文只返回一次
+    hint TEXT NOT NULL,                  -- 尾号提示，如 ofa_…a1b2
+    scopes TEXT NOT NULL DEFAULT 'read', -- 逗号分隔：read / write（write 隐含 read）
+    expires_at TEXT,                     -- ISO 时间；NULL 表示永不过期
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_used_at TEXT,
+    revoked_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_open_api_tokens_user
+    ON open_api_tokens (user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_open_api_tokens_hash
+    ON open_api_tokens (token_hash);
