@@ -93,6 +93,14 @@ class Settings(BaseSettings):
     SEARCH_QUERY_EXPANSION_ENABLED: bool = True
     SEARCH_QUERY_EXPANSION_MAX_TERMS: int = 12
 
+    # 主题聚类（M6-11）：复用 repo_vectors，只读聚类 + 标签建议
+    THEME_MIN_SIMILARITY: float = 0.55  # 归入同一主题的最小余弦相似度
+    THEME_MIN_CLUSTER_SIZE: int = 2  # 小于该规模的簇归入未聚类
+    THEME_MAX_CLUSTERS: int = 12  # 单次最多返回的主题数
+    THEME_MAX_REPOS: int = 500  # 单次参与聚类的仓库上限
+    THEME_KEYWORDS_PER_THEME: int = 5  # 每个主题保留的关键词数
+    THEME_SUGGESTED_TAGS: int = 3  # 每个主题给出的建议标签数
+
     # 推荐生成（M3-05）
     # 最终得分最低阈值（0~1）：相似度 × 权重 + 热榜热度 × 权重
     RECOMMEND_MIN_SCORE: float = 0.30

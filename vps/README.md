@@ -53,6 +53,7 @@ vps/
 │   │   ├── resource_budget.py    # 4G / 15G 资源预算实测与超限建议（M5-06）│   │   ├── vector_index.py       # Vectorize 批量 upsert / 重试 / 对账 / 孤儿清理
 │   │   ├── query_understanding.py # 同义词 / 技术栈词表查询理解（离线、确定性）
 │   │   ├── semantic_search.py    # 查询向量化 + repo_vectors 余弦检索 + 结果水合
+│   │   ├── theme_clustering.py   # 主题聚类：分词 / 关键词 / 贪心聚类 / 簇合并（M6-11）
 │   │   └── degradation.py        # 降级路径自检（模型缺失 / 超预算，离线可跑）
 │   ├── api/                  # HTTP 层（只做参数校验与编排）
 │   │   ├── repos.py              # GET /api/repos、POST /api/repos/sync
@@ -64,6 +65,7 @@ vps/
 │   │   ├── vector_index.py       # /api/vector-index/*（同步入队、对账、状态、运行记录）
 │   │   ├── vectors.py            # GET /api/vectors/stats、runs、单条向量
 │   │   ├── search.py             # /api/search/*（understand / embed / query / semantic / status）
+│   │   ├── themes.py             # /api/themes/cluster（只读主题聚类 + 标签建议）
 │   │   ├── degradation.py        # GET /api/degradation/status（降级自检）
 │   │   └── tasks.py              # /api/tasks/*（与边缘 Worker 的集成契约，X-Internal-Token 鉴权）
 │   └── tasks/                # Celery 任务（薄封装，调用 services + 落库）
@@ -187,6 +189,12 @@ permissions / COOP 头，认证路径额外返回 `Cache-Control: no-store`。
 | `RECOMMEND_EVAL_WEIGHT_GRID` | `0.6,0.8,1.0` | 相似度权重扫描网格（热榜权重 = 1 - w） |
 | `SEARCH_DEFAULT_TOP_K` | `10` | 语义搜索默认返回条数 |
 | `SEARCH_MAX_TOP_K` | `50` | 语义搜索单次最大返回条数 |
+| `THEME_MIN_SIMILARITY` | `0.55` | 主题聚类最小余弦相似度（0~1） |
+| `THEME_MIN_CLUSTER_SIZE` | `2` | 小于该规模的簇归入未聚类 |
+| `THEME_MAX_CLUSTERS` | `12` | 单次最多返回主题数 |
+| `THEME_MAX_REPOS` | `500` | 单次参与聚类的仓库上限 |
+| `THEME_KEYWORDS_PER_THEME` | `5` | 每个主题保留的关键词数 |
+| `THEME_SUGGESTED_TAGS` | `3` | 每个主题给出的建议标签数 |
 | `SEARCH_MIN_SCORE` | `0.0` | 最低余弦相似度（0 表示不过滤） |
 | `SEARCH_MAX_VECTORS` | `50000` | 本地全量余弦扫描上限，超过后依赖 Vectorize |
 | `SEARCH_QUERY_EXPANSION_ENABLED` | `true` | 是否启用查询理解（同义词 / 技术栈词表扩展） |
@@ -402,6 +410,7 @@ Celery beat 每日 04:37 自动增量同步、05:17 自动对账；也可通过�
 | POST | `/api/search/query` | 本地向量余弦检索（`{query,topK,scope,minScore,expand?}`） | `200 {items:[{source,repoId,score}],understanding,...}` |
 | POST | `/api/search/semantic` | 本地检索并水合完整项目信息 | `200 {items:[...],understanding}` |
 | GET | `/api/search/status` | 向量覆盖率、模型分布、最近运行与词表规模 | `200 {...}` |
+| POST | `/api/themes/cluster` | 收藏库主题聚类（`{repoIds,minSimilarity?,minClusterSize?,maxClusters?}`） | `200 {themes,unclustered,stats,thresholds,model,backend,dim,tookMs}` |
 | POST | `/api/recommend/eval` | 推荐质量评估与调参（`sampleSize` / `topK` / `holdoutRatio` / `negativesPerPositive` / `seed` / `userId`） | `200 {status,metrics,thresholds,weights,recommended,...}` |
 
 Vectorize 索引维护接口（同样使用 `X-Internal-Token`）：
@@ -533,6 +542,25 @@ curl -sS -X POST 'http://127.0.0.1:8000/api/search/semantic' \
 
 # 覆盖率 / 模型分布
 curl -sS 'http://127.0.0.1:8000/api/search/status'
+```
+
+## 主题聚类（M6-11）
+
+`theme_clustering` 在 `repo_vectors` 之上做只读聚类，不新增表、不改动标签：
+
+- **范围**：只处理请求 `repoIds`（edge 已按当前用户过滤，≤`THEME_MAX_REPOS`）；VPS 不做多租户隔离；
+- **聚类**：按 Star 降序逐条与现有簇质心比较余弦，≥ `THEME_MIN_SIMILARITY` 归入最相似簇，否则新建；
+  随后对簇质心做一轮合并，减少贪心顺序造成的碎片；
+- **主题**：小于 `THEME_MIN_CLUSTER_SIZE` 的簇进入 `singleton`，按规模 / Star 排序后截断 `THEME_MAX_CLUSTERS`，
+  其余进入 `overflow`；维度 / 模型不一致记 `dim_mismatch`，无向量记 `no_vector`；
+- **命名与标签**：英文词 + 中文 bigram 按「簇内文档频率 - 全局文档频率」打分，取前 2 个作主题名，
+  规范化后取前 `THEME_SUGGESTED_TAGS` 个作建议标签；凝聚度 = 成员与质心的平均余弦；
+- **写入**：本接口只返回建议，标签由 edge 在用户确认后写 D1。
+
+```bash
+curl -sS -X POST 'http://127.0.0.1:8000/api/themes/cluster' \
+  -H 'X-Internal-Token: <token>' -H 'Content-Type: application/json' \
+  -d '{"repoIds":["owner/repo-a","owner/repo-b"],"minSimilarity":0.55,"minClusterSize":2}'
 ```
 
 ## 每日推荐生成（M3-05）

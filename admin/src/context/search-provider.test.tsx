@@ -69,7 +69,7 @@ describe('SearchProvider and CommandMenu', () => {
     await expect
       .element(getByPlaceholder(COMMAND_MENU_PLACEHOLDER))
       .toBeInTheDocument()
-    await expect.element(getByText('主题')).toBeInTheDocument()
+    await expect.element(getByText('主题', { exact: true })).toBeInTheDocument()
     await expect.element(getByText('浅色')).toBeInTheDocument()
     await expect.element(getByText('深色')).toBeInTheDocument()
     await expect.element(getByText('跟随系统')).toBeInTheDocument()

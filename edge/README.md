@@ -57,6 +57,7 @@ edge/
         ├── push-preferences.ts # /api/push-preferences + /api/internal/push-preferences
         ├── sync.ts       # /api/sync
         ├── search.ts     # /api/search/semantic（查询理解 + Vectorize → 本地向量 → 关键词三级降级）
+        ├── themes.ts     # /api/themes/*（主题聚类代理 + 用户过滤 + 标签应用；VPS 不可用时语言兜底）
         ├── monitoring.ts # /api/monitoring/*（总览 / 检查 / 告警确认 + /api/internal/analytics）
         └── internal-vectors.ts # /api/internal/vectors/*（VPS → Vectorize，X-Internal-Token）
 ```
@@ -198,6 +199,8 @@ npm run test:m2 -- --strict \
 | `GET /api/dashboard/stats` | `DashboardStats` |
 | `POST /api/sync` | 202 `{"status":"queued"}`（已配置 VPS）或 `{"status":"accepted","note":"vps node not configured"}` |
 | `POST /api/search/semantic` | `SearchResponse`：body `{query, topK?, scope?}`；mode 为 `vectorize` / `local` / `keyword`；`my` 结果仅当前用户；响应可带 `understanding`（查询理解结果），关键词兜底用其扩展词做多词 OR LIKE |
+| `POST /api/themes/cluster` | 当前用户收藏库主题聚类：body `{minSimilarity?, minClusterSize?, maxClusters?}`；mode 为 `vector` / `keyword` / `empty`；只包含当前用户仓库；VPS 不可用时按语言兜底 |
+| `POST /api/themes/apply` | 应用标签：body `{tag, repoIds}`（repoIds ≤200）；仅当前用户仓库，`tags` / `repo_tags` 幂等写入并重算计数 |
 | `GET /api/monitoring/overview?days=7` | 监控总览（需登录）：`{status, generatedAt, edge, workers, workersError, vps, vpsError}`；合并 VPS 实时状态与 Workers 每日聚合，VPS 不可用时降级返回 Workers 部分 |
 | `POST /api/monitoring/check` | 触发 VPS 一次检查（需登录；VPS 未配置返回 503） |
 | `POST /api/monitoring/alerts/:id/ack` | 确认 VPS 告警（需登录） |

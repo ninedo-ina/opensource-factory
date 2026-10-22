@@ -406,6 +406,8 @@ edge 侧 `/api/monitoring/overview` 需登录，`/api/internal/analytics` 供内
 | `/api/push-preferences` | PUT | 保存推送偏好（时间 / 时区 / 阈值 / 通道开关） |
 | `/api/sync` | POST | 触发同步任务（202） |
 | `/api/search/semantic` | POST | 语义搜索（`query` / `topK` / `scope`；vectorize → local → keyword 三级降级） |
+| `/api/themes/cluster` | POST | 当前用户收藏库主题聚类（`minSimilarity` / `minClusterSize` / `maxClusters`；VPS 向量聚类，失败时语言兜底） |
+| `/api/themes/apply` | POST | 把建议标签应用到选中仓库（`tag` / `repoIds`；仅当前用户仓库，幂等） |
 | `/api/monitoring/overview` | GET | 监控总览（登录态；合并 VPS 状态与 Workers 指标，`?days=1..30`） |
 | `/api/monitoring/check` | POST | 触发一次 VPS 监控检查（登录态代理） |
 | `/api/monitoring/alerts/:id/ack` | POST | 确认监控告警（登录态代理） |
@@ -466,6 +468,7 @@ edge 侧 `/api/monitoring/overview` 需登录，`/api/internal/analytics` 供内
 | `/api/vectors/runs/{runId}` | GET | 向量化运行详情 |
 | `/api/vectors/{source}/{repoId}` | GET | 单条仓库向量 |
 | `/api/search/understand` | POST | 查询理解：同义词 / 技术栈词表扩展（`query` / `expand`） |
+| `/api/themes/cluster` | POST | 收藏库主题聚类（`repoIds` ≤500 + 阈值；只读复用 `repo_vectors`，返回主题 / 关键词 / 建议标签） |
 | `/api/recommend/eval` | POST | 推荐质量评估与阈值 / 权重调参建议（抽样评估集） |
 | `/api/degradation/status` | GET | 降级路径自检（模型缺失 / 超预算） |
 | `/api/push/bark/status` | GET | Bark 通道状态与待投递 / 已投递 / 失败计数 |
@@ -540,3 +543,22 @@ Celery beat 周日 04:20 → backup_drill → 快照恢复到临时库 → 完�
 D1 凭据只存在于部署控制面，VPS 不持有 Cloudflare 凭据；备份目录 700 / 文件 600，
 保留最近 7 份、总量 3 GB（`resource-plan.md` §4）。详见
 [backup-restore.md](../guides/backup-restore.md)。
+
+### 3.22 主题聚类与自动标签流（M6-11）
+
+```
+admin /themes → POST /api/themes/cluster（登录态）
+→ edge 按 user_id 读取 D1 my_repositories（≤500，带标签）→ 只把当前用户 repoIds 传给 VPS
+→ VPS POST /api/themes/cluster（X-Internal-Token）
+   → 读取 repo_vectors（source=my，仅传入 repoIds）
+   → 余弦相似度贪心聚类 + 簇质心合并
+   → 关键词（英文词 / 中文 bigram，全局文档频率惩罚）→ 主题名 / 建议标签 / 凝聚度
+→ edge 按用户仓库集合二次过滤 + 用 D1 标签水合 → 返回 themes / unclustered / stats
+→ VPS 不可达 → edge 按主语言分组兜底（mode=keyword），页面不空白
+
+用户点击建议标签 → POST /api/themes/apply（登录态）
+→ 校验 tag 与 repoIds 属于当前用户 → upsert tags + repo_tags（幂等）→ 重算 tags.count
+```
+
+主题聚类只读、不新增表：复用 `repo_vectors`（VPS）与 `tags` / `repo_tags`（D1）。
+阈值 `THEME_*` 只影响本次计算；标签必须由用户显式确认后写入，避免自动改坏现有标签体系。

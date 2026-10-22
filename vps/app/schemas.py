@@ -683,6 +683,80 @@ class SearchStatusResponse(BaseModel):
     vocabulary: dict[str, int]
     latestRuns: list[VectorRunOut]
 
+
+class ThemeClusterRequest(BaseModel):
+    """主题聚类请求：repoIds 由 edge 按当前用户过滤后传入。"""
+
+    repoIds: list[str] = Field(default_factory=list)
+    minSimilarity: float | None = None
+    minClusterSize: int | None = None
+    maxClusters: int | None = None
+
+
+class ThemeRepoOut(BaseModel):
+    """主题内的仓库条目。"""
+
+    id: str
+    name: str
+    description: str = ""
+    summary: str = ""
+    language: str = ""
+    stars: int = 0
+    tags: list[str] = Field(default_factory=list)
+
+
+class ThemeClusterOut(BaseModel):
+    """单个主题。"""
+
+    id: str
+    name: str
+    keywords: list[str] = Field(default_factory=list)
+    suggestedTags: list[str] = Field(default_factory=list)
+    repoCount: int
+    cohesion: float
+    repos: list[ThemeRepoOut] = Field(default_factory=list)
+
+
+class ThemeUnclusteredOut(BaseModel):
+    """未聚类仓库及原因（no_vector / singleton / overflow / dim_mismatch）。"""
+
+    id: str
+    name: str
+    reason: str
+
+
+class ThemeStatsOut(BaseModel):
+    """聚类统计。"""
+
+    totalRepos: int
+    clusteredRepos: int
+    themeCount: int
+    coverage: float
+    vectorized: int
+
+
+class ThemeThresholdsOut(BaseModel):
+    """本次生效的聚类阈值。"""
+
+    minSimilarity: float
+    minClusterSize: int
+    maxClusters: int
+
+
+class ThemeClusterResponse(BaseModel):
+    """主题聚类响应。"""
+
+    themes: list[ThemeClusterOut] = Field(default_factory=list)
+    unclustered: list[ThemeUnclusteredOut] = Field(default_factory=list)
+    stats: ThemeStatsOut
+    thresholds: ThemeThresholdsOut
+    model: str = ""
+    backend: str = ""
+    dim: int = 0
+    generatedAt: str
+    tookMs: int
+
+
 class DegradationCheckOut(BaseModel):
     """单项降级检查结果。"""
 

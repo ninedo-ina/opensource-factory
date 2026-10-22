@@ -513,6 +513,16 @@ VPS 本地 SQLite 表（M2-04），不复制到 D1；用于留存样本、人工
 
 增量判定：`text_hash + model + backend + dim` 任一变化或上次状态非 `synced` 时重新 upsert；`full` 模式忽略状态全量重传。
 
+### 5.3 主题聚类（M6-11，只读派生）
+
+主题不是持久化实体，不新增表：
+
+- 输入：edge 传入的当前用户 `repoIds`（≤500）+ 本次阈值（`minSimilarity` / `minClusterSize` / `maxClusters`）；
+- 向量：只读取 `repo_vectors` 中 `source='my'` 且 `repo_id` 在输入范围内的行；缺失向量记 `no_vector`，维度 / 模型不一致记 `dim_mismatch`；
+- 输出：主题（名称 / 关键词 / 建议标签 / 凝聚度 / 仓库列表）、未聚类仓库与统计；由 edge 二次过滤后返回 admin；
+- 标签写入：用户确认后由 edge 写 D1 `tags`（不存在则创建）与 `repo_tags`（联合主键幂等），并重算 `tags.count`；
+- 阈值配置：VPS `.env` 的 `THEME_MIN_SIMILARITY` / `THEME_MIN_CLUSTER_SIZE` / `THEME_MAX_CLUSTERS` / `THEME_MAX_REPOS` / `THEME_KEYWORDS_PER_THEME` / `THEME_SUGGESTED_TAGS`，请求可覆盖前三项（受服务端夹取）。
+
 ## 6. 一致性约定
 
 - D1 为**主数据**；VPS 本地 SQLite 为算力镜像（允许重建）；
