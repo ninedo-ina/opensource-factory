@@ -161,7 +161,10 @@ D1 演练由 `backup-drill.sh` 校验最新归档；没有 D1 归档时明确输
 - 不做跨账号容灾；
 - 恢复窗口内 API / worker / beat 必须停止，恢复后需冒烟与业务核对。
 
-以上增强项记入后续需求（M9-04 全量导出与归档、M5-07 运维手册等）。
+以上增强项记入后续需求（M5-07 运维手册等）。M9-04 已提供**用户级逻辑归档**
+（`openfactory.archive.v1`，ZIP / JSON + SHA-256），用于单账号迁移与长期保存，
+不替代本文件的整库物理备份与恢复演练；详见
+[full-export-archive.md](./full-export-archive.md)。
 
 ## 10. 故障排查
 

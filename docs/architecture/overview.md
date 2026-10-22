@@ -717,6 +717,24 @@ python -m app.quick_entry_eval report
 结论：M8-05 个人令牌与 `/api/v1/*` 落地前，所有快捷入口均被阻塞；
 本评估只定义契约与优先级，不替代 M8-05/06 的实现与验收。
 
+### 3.36 全量导出与归档流（M9-04）
+
+```
+admin /archive → GET /api/export/archive/summary（登录态）→ 数据集条数 / 记录数 / 估算大小
+→ 选择范围（full | knowledge）与格式（zip | json）
+→ GET /api/export/archive?scope=full&format=zip
+→ edge 按 user_id 依次只读查询 11 个数据集（knowledge 范围只取前 4 个）
+→ 纯函数构建 openfactory.archive.v1：
+   ├─ ZIP：manifest.json + README.md + checksums.sha256 + data/*.json（store 模式）
+   └─ JSON：{ manifest, checksums, data } 单文件
+→ Content-Disposition 附件下载（Cache-Control: no-store，服务端不留副本）
+```
+
+归档是**用户级逻辑归档**，与 M5-04 的整库物理备份互补：不新增表、不写 D1、
+不包含 sessions / extension_tokens / telegram_links / login_attempts / security_events
+等秘密与运维数据。每个数据文件带 SHA-256，ZIP 可用 `sha256sum -c` 校验。
+格式规范见 [full-export-archive.md](../guides/full-export-archive.md)。
+
 ## 4. 接口边界
 
 ### 4.1 admin ↔ edge（JSON over HTTPS，Cookie 会话）
@@ -785,6 +803,9 @@ python -m app.quick_entry_eval report
 | `/api/analysis/dependencies/refresh` | POST | 扫描当前用户仓库依赖清单（VPS 不可达返回 `status=unavailable`） |
 | `/api/export/knowledge/summary` | GET | 知识库导出统计（登录态；项目 / 摘要 / 分类 / 标签 / Star） |
 | `/api/export/knowledge` | GET | 生成知识库附件（`format` / `includeSummary` / `groupBy`，登录态） |
+| `/api/export/archive/summary` | GET | 全量归档数据集统计（登录态；条数 / 记录 / 估算大小 / 范围与格式） |
+| `/api/export/archive/manifest` | GET | 全量归档 manifest 预览（`scope` / `format`，登录态） |
+| `/api/export/archive` | GET | 生成 `openfactory.archive.v1` 附件（`scope=full\|knowledge`、`format=zip\|json`，登录态） |
 | `/api/tag-suggestions` | GET | 打标建议列表（`status=pending\|accepted\|dismissed\|all`、`repoId`、`limit`、`offset`；返回汇总） |
 | `/api/tag-suggestions/generate` | POST | 基于摘要生成建议（`repoIds?` / `limit?` / `perRepo?`；VPS 优先、本地规则兜底） |
 | `/api/tag-suggestions/accept` | POST | 采纳建议（`ids` 或 `repoId + tags`；写 `tags` / `repo_tags`） |

@@ -1,6 +1,6 @@
 # OpenFactory Edge API
 
-「开源项目工厂 / OpenFactory」的边缘 API 层，运行在 **Cloudflare Workers** 上，为管理后台（admin 前端）提供：GitHub OAuth 登录、用户会话、以及仓库 / 趋势 / 推荐 / 分类 / 仪表盘 / 知识库导出等接口。
+「开源项目工厂 / OpenFactory」的边缘 API 层，运行在 **Cloudflare Workers** 上，为管理后台（admin 前端）提供：GitHub OAuth 登录、用户会话、以及仓库 / 趋势 / 推荐 / 分类 / 仪表盘 / 知识库导出 / 全量归档等接口。
 
 ## 定位
 
@@ -90,7 +90,8 @@ edge/
         ├── search.ts     # /api/search/semantic（语义三级降级）· /api/search/fulltext（README FTS）
         ├── tech-stack.ts # /api/tech-stack（语言 / 框架聚合 + 关系图，只读 D1）
         ├── star-trends.ts # /api/star-trends（trending_snapshots 只读聚合 + 洞察）
-        ├── export.ts     # /api/export/knowledge（Markdown / JSON / Obsidian 知识库导出）
+        ├── export.ts     # /api/export/knowledge（Markdown / JSON / Obsidian 知识库导出）+ /archive 挂载
+        ├── archive.ts    # /api/export/archive（openfactory.archive.v1 全量归档：ZIP / JSON + SHA-256）
         ├── monitoring.ts # /api/monitoring/*（总览 / 检查 / 告警确认 + /api/internal/analytics）
         ├── similar.ts    # /api/similar（相似项目：VPS 向量近邻 → D1 关键词兜底）
         ├── duplicates.ts # /api/duplicates/*（重复检测：VPS 规则 + 向量 → 本地兜底；按用户忽略）
@@ -281,6 +282,9 @@ npm run test:m2 -- --strict \
 | `GET /api/star-trends?days=&scope=&language=` | `StarTrendsResponse`（需登录）：`{scope, period, summary, series, topMovers, newEntries, languages, insights, generatedAt}`；`days` 1~365（默认 30），`scope=trending\|my`，`my` 只统计收藏仓库并返回 `portfolioRepos` / `coverage` |
 | `GET /api/export/knowledge/summary` | 导出统计（需登录）：`{totalRepos, withSummary, categoryCount, tagCount, totalStars, generatedAt}` |
 | `GET /api/export/knowledge?format=&includeSummary=&groupBy=` | 生成知识库附件（需登录）：`format=markdown\|json\|obsidian`，附件名见 `docs/guides/knowledge-export.md` |
+| `GET /api/export/archive/summary` | 全量归档统计（需登录）：`{schema, version, datasets[], totalRecords, estimatedBytes, scopes, formats}` |
+| `GET /api/export/archive/manifest?scope=&format=` | 仅返回 `openfactory.archive.v1` manifest（需登录） |
+| `GET /api/export/archive?scope=full\|knowledge&format=zip\|json` | 生成全量归档附件（需登录；默认 `full` + `zip`，格式见 `docs/guides/full-export-archive.md`） |
 | `GET /api/monitoring/overview?days=7` | 监控总览（需登录）：`{status, generatedAt, edge, workers, workersError, vps, vpsError}`；合并 VPS 实时状态与 Workers 每日聚合，VPS 不可用时降级返回 Workers 部分 |
 | `POST /api/monitoring/check` | 触发 VPS 一次检查（需登录；VPS 未配置返回 503） |
 | `POST /api/monitoring/alerts/:id/ack` | 确认 VPS 告警（需登录） |

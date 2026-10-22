@@ -9,6 +9,7 @@ import { Hono } from 'hono';
 import type { Context } from 'hono';
 import type { Env, Variables } from '../types';
 import { all } from '../db';
+import archiveRoutes from './archive';
 import {
   buildExport,
   buildKnowledgeExport,
@@ -78,5 +79,8 @@ exportRoutes.get('/knowledge', async (c) => {
     },
   });
 });
+
+// 全量导出与归档（M9-04）挂载在同一 /api/export 前缀下。
+exportRoutes.route('/archive', archiveRoutes);
 
 export default exportRoutes;

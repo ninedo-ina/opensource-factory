@@ -64,6 +64,8 @@ category_suggestions         （自动分类建议：按用户 / 仓库 / 分类
 >
 > 知识库导出（M6-08）只读聚合 `my_repositories` + `categories` + `tags` / `repo_tags`，
 > 不新增表、不写 D1；导出格式见 `docs/guides/knowledge-export.md`。
+> 全量归档（M9-04）同样只读聚合，按 `user_id` 覆盖 11 个业务数据集，
+> 不新增表、不落服务端；格式见 `docs/guides/full-export-archive.md`。
 
 **更新提醒扫描基线（REQ-202610-0963 / M7-04，仅 VPS 本地）**
 
@@ -813,3 +815,19 @@ CREATE VIRTUAL TABLE repo_readme_fts USING fts5(
 
 备份产物不进入 D1、不参与表结构迁移；保留策略与恢复 SOP 见
 [backup-restore.md](../guides/backup-restore.md)。
+
+### 7.1 用户逻辑归档（M9-04）
+
+全量归档不是数据库表，也不写任何存储：edge 在请求内按 `user_id` 只读查询
+`users` / `my_repositories` / `categories` / `tags` / `recommendations` /
+`recommendation_feedback` / `notifications` / `push_preferences` /
+`curated_reports` / `repo_updates` / `duplicate_dismissals`，构建
+`openfactory.archive.v1` 后直接作为附件返回，服务端不留副本。
+
+| 范围 | 数据集 | 用途 |
+| --- | --- | --- |
+| `full` | 上述 11 个数据集 | 账号级完整备份与迁移 |
+| `knowledge` | `profile` / `repositories` / `categories` / `tags` | 轻量知识库迁移 |
+
+会话、扩展令牌、Telegram 绑定码、登录安全事件与运维指标不在归档范围内。
+字段与文件布局见 [full-export-archive.md](../guides/full-export-archive.md)。
