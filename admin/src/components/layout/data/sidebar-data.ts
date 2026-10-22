@@ -23,6 +23,7 @@ import {
   Sparkles,
   Tags,
   TrendingUp,
+  Upload,
   User,
 } from 'lucide-react'
 import type { SidebarData } from '../types'
@@ -62,6 +63,7 @@ export const sidebarData: SidebarData = {
         { title: '资产报表', url: '/asset-report', icon: FileBarChart },
         { title: '依赖分析', url: '/dependencies', icon: Boxes },
         { title: '知识库导出', url: '/export', icon: Archive },
+        { title: '数据导入', url: '/import', icon: Upload },
         { title: '打标建议', url: '/tag-suggestions', icon: Tags },
         { title: '精选报告', url: '/reports', icon: FileText },
         { title: '更新提醒', url: '/updates', icon: BellRing },

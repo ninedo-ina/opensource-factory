@@ -25,6 +25,7 @@ import { Route as AuthenticatedDependenciesIndexRouteImport } from './routes/_au
 import { Route as AuthenticatedDuplicatesIndexRouteImport } from './routes/_authenticated/duplicates/index'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedExportIndexRouteImport } from './routes/_authenticated/export/index'
+import { Route as AuthenticatedImportIndexRouteImport } from './routes/_authenticated/import/index'
 import { Route as AuthenticatedLicensesIndexRouteImport } from './routes/_authenticated/licenses/index'
 import { Route as AuthenticatedModelRoutingIndexRouteImport } from './routes/_authenticated/model-routing/index'
 import { Route as AuthenticatedMonitoringIndexRouteImport } from './routes/_authenticated/monitoring/index'
@@ -133,6 +134,12 @@ const AuthenticatedExportIndexRoute =
   AuthenticatedExportIndexRouteImport.update({
     id: '/export/',
     path: '/export/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedImportIndexRoute =
+  AuthenticatedImportIndexRouteImport.update({
+    id: '/import/',
+    path: '/import/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedLicensesIndexRoute =
@@ -288,6 +295,7 @@ export interface FileRoutesByFullPath {
   '/dependencies/': typeof AuthenticatedDependenciesIndexRoute
   '/duplicates/': typeof AuthenticatedDuplicatesIndexRoute
   '/export/': typeof AuthenticatedExportIndexRoute
+  '/import/': typeof AuthenticatedImportIndexRoute
   '/licenses/': typeof AuthenticatedLicensesIndexRoute
   '/model-routing/': typeof AuthenticatedModelRoutingIndexRoute
   '/monitoring/': typeof AuthenticatedMonitoringIndexRoute
@@ -326,6 +334,7 @@ export interface FileRoutesByTo {
   '/dependencies': typeof AuthenticatedDependenciesIndexRoute
   '/duplicates': typeof AuthenticatedDuplicatesIndexRoute
   '/export': typeof AuthenticatedExportIndexRoute
+  '/import': typeof AuthenticatedImportIndexRoute
   '/licenses': typeof AuthenticatedLicensesIndexRoute
   '/model-routing': typeof AuthenticatedModelRoutingIndexRoute
   '/monitoring': typeof AuthenticatedMonitoringIndexRoute
@@ -367,6 +376,7 @@ export interface FileRoutesById {
   '/_authenticated/dependencies/': typeof AuthenticatedDependenciesIndexRoute
   '/_authenticated/duplicates/': typeof AuthenticatedDuplicatesIndexRoute
   '/_authenticated/export/': typeof AuthenticatedExportIndexRoute
+  '/_authenticated/import/': typeof AuthenticatedImportIndexRoute
   '/_authenticated/licenses/': typeof AuthenticatedLicensesIndexRoute
   '/_authenticated/model-routing/': typeof AuthenticatedModelRoutingIndexRoute
   '/_authenticated/monitoring/': typeof AuthenticatedMonitoringIndexRoute
@@ -408,6 +418,7 @@ export interface FileRouteTypes {
     | '/dependencies/'
     | '/duplicates/'
     | '/export/'
+    | '/import/'
     | '/licenses/'
     | '/model-routing/'
     | '/monitoring/'
@@ -446,6 +457,7 @@ export interface FileRouteTypes {
     | '/dependencies'
     | '/duplicates'
     | '/export'
+    | '/import'
     | '/licenses'
     | '/model-routing'
     | '/monitoring'
@@ -486,6 +498,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dependencies/'
     | '/_authenticated/duplicates/'
     | '/_authenticated/export/'
+    | '/_authenticated/import/'
     | '/_authenticated/licenses/'
     | '/_authenticated/model-routing/'
     | '/_authenticated/monitoring/'
@@ -627,6 +640,13 @@ declare module '@tanstack/react-router' {
       path: '/export'
       fullPath: '/export/'
       preLoaderRoute: typeof AuthenticatedExportIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/import/': {
+      id: '/_authenticated/import/'
+      path: '/import'
+      fullPath: '/import/'
+      preLoaderRoute: typeof AuthenticatedImportIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/licenses/': {
@@ -821,6 +841,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDependenciesIndexRoute: typeof AuthenticatedDependenciesIndexRoute
   AuthenticatedDuplicatesIndexRoute: typeof AuthenticatedDuplicatesIndexRoute
   AuthenticatedExportIndexRoute: typeof AuthenticatedExportIndexRoute
+  AuthenticatedImportIndexRoute: typeof AuthenticatedImportIndexRoute
   AuthenticatedLicensesIndexRoute: typeof AuthenticatedLicensesIndexRoute
   AuthenticatedModelRoutingIndexRoute: typeof AuthenticatedModelRoutingIndexRoute
   AuthenticatedMonitoringIndexRoute: typeof AuthenticatedMonitoringIndexRoute
@@ -850,6 +871,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDependenciesIndexRoute: AuthenticatedDependenciesIndexRoute,
   AuthenticatedDuplicatesIndexRoute: AuthenticatedDuplicatesIndexRoute,
   AuthenticatedExportIndexRoute: AuthenticatedExportIndexRoute,
+  AuthenticatedImportIndexRoute: AuthenticatedImportIndexRoute,
   AuthenticatedLicensesIndexRoute: AuthenticatedLicensesIndexRoute,
   AuthenticatedModelRoutingIndexRoute: AuthenticatedModelRoutingIndexRoute,
   AuthenticatedMonitoringIndexRoute: AuthenticatedMonitoringIndexRoute,

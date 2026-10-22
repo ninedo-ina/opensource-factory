@@ -50,7 +50,8 @@ edge/
 │   ├── 0019_repo_updates.sql  # 收藏项目更新提醒（M7-04）
 │   ├── 0020_rerank.sql  # 精排分 / 名次 / 明细字段（M7-07）
 │   ├── 0021_telegram_bot.sql  # Telegram 会话绑定 + 一次性绑定码（M8-03）
-│   └── 0022_extension_tokens.sql  # 浏览器扩展令牌（M8-02；由 0016 顺延避免重号）
+│   ├── 0022_extension_tokens.sql  # 浏览器扩展令牌（M8-02；由 0016 顺延避免重号）
+│   └── 0023_data_import.sql  # 外部收藏导入记录（M9-03；由 0022 顺延避免重号）
 └── src/
     ├── index.ts          # Hono 入口：CORS、日志、/healthz、路由挂载、Cron scheduled handler
     ├── types.ts          # Env 绑定 + 数据库行 + API 响应实体
@@ -95,6 +96,7 @@ edge/
         ├── star-trends.ts # /api/star-trends（trending_snapshots 只读聚合 + 洞察）
         ├── asset-report.ts # /api/asset-report（收录量 / 分类 / 语言 / Star 趋势只读聚合）
         ├── export.ts     # /api/export/knowledge（Markdown / JSON / Obsidian 知识库导出）
+        ├── import.ts     # /api/import/*（外部收藏导入：预览 / 执行 / 历史）
         ├── monitoring.ts # /api/monitoring/*（总览 / 检查 / 告警确认 + /api/internal/analytics）
         ├── similar.ts    # /api/similar（相似项目：VPS 向量近邻 → D1 关键词兜底）
         ├── duplicates.ts # /api/duplicates/*（重复检测：VPS 规则 + 向量 → 本地兜底；按用户忽略）
@@ -287,6 +289,9 @@ npm run test:m2 -- --strict \
 | `GET /api/asset-report?months=` | `AssetReportResponse`（需登录）：`{period, summary, volume, categories, languages, starTrend, insights, generatedAt}`；`months` 仅 6 / 12 / 24（默认 12）；收录量按 UTC 自然月，Star 趋势复用 `buildStarTrends(scope=my)` 并返回覆盖率 |
 | `GET /api/export/knowledge/summary` | 导出统计（需登录）：`{totalRepos, withSummary, categoryCount, tagCount, totalStars, generatedAt}` |
 | `GET /api/export/knowledge?format=&includeSummary=&groupBy=` | 生成知识库附件（需登录）：`format=markdown\|json\|obsidian`，附件名见 `docs/guides/knowledge-export.md` |
+| `POST /api/import/preview` | 解析导入内容并返回新增 / 更新 / 冲突 / 无效统计与样例（需登录；不写库，≤2 MB / 2000 条） |
+| `POST /api/import/execute` | 执行导入：UPSERT `my_repositories`、创建分类 / 标签并记录 `import_runs`（需登录；冲突跳过） |
+| `GET /api/import/history?limit=10` | 当前用户最近导入记录（需登录；`limit` 1–50） |
 | `GET /api/monitoring/overview?days=7` | 监控总览（需登录）：`{status, generatedAt, edge, workers, workersError, vps, vpsError}`；合并 VPS 实时状态与 Workers 每日聚合，VPS 不可用时降级返回 Workers 部分 |
 | `POST /api/monitoring/check` | 触发 VPS 一次检查（需登录；VPS 未配置返回 503） |
 | `POST /api/monitoring/alerts/:id/ack` | 确认 VPS 告警（需登录） |
