@@ -699,6 +699,27 @@ admin 设置 → 通知设置 → Telegram 查询 Bot
 - 所有查询 SQL 都带 `user_id`，未绑定会话不会读到任何用户数据；
 - 绑定码一次性使用，绑定成功 / 过期后即删除；重新绑定会替换该用户旧会话。
 
+### 3.35 资产报表流（M9-02）
+
+```
+admin /asset-report → GET /api/asset-report?months=6|12|24（登录态，默认 12）
+→ edge 读取 D1：my_repositories（当前用户全量）/ categories（分类名）
+   / trending_snapshots（近 months × 30 天，按收藏仓库白名单分片查询）
+→ 纯函数 buildAssetReport 聚合：
+   收录量（UTC 自然月新增 / 累计、近 7/30/90/365 天、平台分布）
+   → 分类分布（含「未分类」、占比 / Star / 平均 Star / 主要语言）
+   → 语言分布（复用 M6-04 normalizeLanguage）
+   → Star 趋势（复用 M7-05 buildStarTrends，scope=my，含覆盖率与 Top Movers）
+   → 确定性洞察（收录节奏 / 增长 / 分类集中度 / 未分类 / Star 头部 / 快照覆盖）
+→ admin 渲染 KPI、收录量柱线图、分类 / 语言分布、Star 面积图、Top Movers、分类明细，
+   支持 6/12/24 月窗口与 CSV 导出
+```
+
+口径：收录量按 `created_at` 的 UTC 自然月统计，窗口起点为当前月往前 `months - 1` 个月的 1 日；
+`created_at` 缺失的仓库计入 `unknownCreated`，不进入月度分布。Star 存量为当前 `stars` 合计，
+Star 趋势只覆盖上过热榜、有快照的收藏仓库（不补零），覆盖率 = 有快照仓库 / 收藏总数。
+只读聚合，不新增表 / 迁移，也不依赖 VPS。
+
 ## 4. 接口边界
 
 ### 4.1 admin ↔ edge（JSON over HTTPS，Cookie 会话）
@@ -752,6 +773,7 @@ admin 设置 → 通知设置 → Telegram 查询 Bot
 | `/api/search/semantic` | POST | 语义搜索（`query` / `topK` / `scope`；vectorize → local → keyword 三级降级） |
 | `/api/tech-stack` | GET | 技术栈图谱（登录态；语言 / 框架聚合 + 语言 × 框架关系图，Top 8 × 16） |
 | `/api/star-trends` | GET | Star 趋势与洞察（登录态；`days=1..365` / `scope=trending\|my` / `language`；快照只读聚合） |
+| `/api/asset-report` | GET | 资产报表（登录态；`months=6\|12\|24`，默认 12；收录量 / 分类分布 / 语言 / Star 趋势只读聚合） |
 | `/api/monitoring/overview` | GET | 监控总览（登录态；合并 VPS 状态与 Workers 指标，`?days=1..30`） |
 | `/api/monitoring/check` | POST | 触发一次 VPS 监控检查（登录态代理） |
 | `/api/monitoring/alerts/:id/ack` | POST | 确认监控告警（登录态代理） |

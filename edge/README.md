@@ -55,6 +55,8 @@ edge/
     ├── types.ts          # Env 绑定 + 数据库行 + API 响应实体
     ├── db.ts             # D1 查询辅助（first / all / run / count）
     ├── auth.ts           # 会话与 GitHub OAuth 辅助、cookie、redirect 校验
+    ├── asset-report/
+    │   └── aggregate.ts  # 资产报表：收录量 / 分类 / 语言 / Star 趋势聚合（纯函数）
     ├── search/
     │   └── items.ts      # 搜索结果水合（语义搜索 / 相似推荐共用）
     ├── similar/
@@ -89,6 +91,7 @@ edge/
         ├── search.ts     # /api/search/semantic（语义三级降级）· /api/search/fulltext（README FTS）
         ├── tech-stack.ts # /api/tech-stack（语言 / 框架聚合 + 关系图，只读 D1）
         ├── star-trends.ts # /api/star-trends（trending_snapshots 只读聚合 + 洞察）
+        ├── asset-report.ts # /api/asset-report（收录量 / 分类 / 语言 / Star 趋势只读聚合）
         ├── export.ts     # /api/export/knowledge（Markdown / JSON / Obsidian 知识库导出）
         ├── monitoring.ts # /api/monitoring/*（总览 / 检查 / 告警确认 + /api/internal/analytics）
         ├── similar.ts    # /api/similar（相似项目：VPS 向量近邻 → D1 关键词兜底）
@@ -278,6 +281,7 @@ npm run test:m2 -- --strict \
 | `POST /api/search/semantic` | `SearchResponse`：body `{query, topK?, scope?}`；mode 为 `vectorize` / `local` / `keyword`；`my` 结果仅当前用户；响应可带 `understanding`（查询理解结果），关键词兜底用其扩展词做多词 OR LIKE |
 | `GET /api/tech-stack` | `TechStackResponse`（需登录）：`{summary, languages, frameworks, graph:{nodes,links}, generatedAt}`；语言 / 框架按当前用户仓库聚合，图谱保留 Top 8 × 16 |
 | `GET /api/star-trends?days=&scope=&language=` | `StarTrendsResponse`（需登录）：`{scope, period, summary, series, topMovers, newEntries, languages, insights, generatedAt}`；`days` 1~365（默认 30），`scope=trending\|my`，`my` 只统计收藏仓库并返回 `portfolioRepos` / `coverage` |
+| `GET /api/asset-report?months=` | `AssetReportResponse`（需登录）：`{period, summary, volume, categories, languages, starTrend, insights, generatedAt}`；`months` 仅 6 / 12 / 24（默认 12）；收录量按 UTC 自然月，Star 趋势复用 `buildStarTrends(scope=my)` 并返回覆盖率 |
 | `GET /api/export/knowledge/summary` | 导出统计（需登录）：`{totalRepos, withSummary, categoryCount, tagCount, totalStars, generatedAt}` |
 | `GET /api/export/knowledge?format=&includeSummary=&groupBy=` | 生成知识库附件（需登录）：`format=markdown\|json\|obsidian`，附件名见 `docs/guides/knowledge-export.md` |
 | `GET /api/monitoring/overview?days=7` | 监控总览（需登录）：`{status, generatedAt, edge, workers, workersError, vps, vpsError}`；合并 VPS 实时状态与 Workers 每日聚合，VPS 不可用时降级返回 Workers 部分 |

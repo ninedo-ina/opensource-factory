@@ -18,6 +18,7 @@ import { Route as errors500RouteImport } from './routes/(errors)/500'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
+import { Route as AuthenticatedAssetReportIndexRouteImport } from './routes/_authenticated/asset-report/index'
 import { Route as AuthenticatedCategoriesIndexRouteImport } from './routes/_authenticated/categories/index'
 import { Route as AuthenticatedCategorySuggestionsIndexRouteImport } from './routes/_authenticated/category-suggestions/index'
 import { Route as AuthenticatedDependenciesIndexRouteImport } from './routes/_authenticated/dependencies/index'
@@ -37,6 +38,7 @@ import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
+import { Route as AuthenticatedSettingsExtensionRouteImport } from './routes/_authenticated/settings/extension'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
 import { Route as AuthenticatedStarTrendsIndexRouteImport } from './routes/_authenticated/star-trends/index'
 import { Route as AuthenticatedTagSuggestionsIndexRouteImport } from './routes/_authenticated/tag-suggestions/index'
@@ -88,6 +90,12 @@ const AuthenticatedSettingsRouteRoute =
   AuthenticatedSettingsRouteRouteImport.update({
     id: '/settings',
     path: '/settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAssetReportIndexRoute =
+  AuthenticatedAssetReportIndexRouteImport.update({
+    id: '/asset-report/',
+    path: '/asset-report/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCategoriesIndexRoute =
@@ -203,6 +211,12 @@ const AuthenticatedSettingsDisplayRoute =
     path: '/display',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedSettingsExtensionRoute =
+  AuthenticatedSettingsExtensionRouteImport.update({
+    id: '/extension',
+    path: '/extension',
+    getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
 const AuthenticatedSettingsNotificationsRoute =
   AuthenticatedSettingsNotificationsRouteImport.update({
     id: '/notifications',
@@ -259,7 +273,9 @@ export interface FileRoutesByFullPath {
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
+  '/settings/extension': typeof AuthenticatedSettingsExtensionRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/asset-report/': typeof AuthenticatedAssetReportIndexRoute
   '/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/category-suggestions/': typeof AuthenticatedCategorySuggestionsIndexRoute
   '/dependencies/': typeof AuthenticatedDependenciesIndexRoute
@@ -294,7 +310,9 @@ export interface FileRoutesByTo {
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
+  '/settings/extension': typeof AuthenticatedSettingsExtensionRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/asset-report': typeof AuthenticatedAssetReportIndexRoute
   '/categories': typeof AuthenticatedCategoriesIndexRoute
   '/category-suggestions': typeof AuthenticatedCategorySuggestionsIndexRoute
   '/dependencies': typeof AuthenticatedDependenciesIndexRoute
@@ -332,7 +350,9 @@ export interface FileRoutesById {
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
+  '/_authenticated/settings/extension': typeof AuthenticatedSettingsExtensionRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/_authenticated/asset-report/': typeof AuthenticatedAssetReportIndexRoute
   '/_authenticated/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/_authenticated/category-suggestions/': typeof AuthenticatedCategorySuggestionsIndexRoute
   '/_authenticated/dependencies/': typeof AuthenticatedDependenciesIndexRoute
@@ -370,7 +390,9 @@ export interface FileRouteTypes {
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
+    | '/settings/extension'
     | '/settings/notifications'
+    | '/asset-report/'
     | '/categories/'
     | '/category-suggestions/'
     | '/dependencies/'
@@ -405,7 +427,9 @@ export interface FileRouteTypes {
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
+    | '/settings/extension'
     | '/settings/notifications'
+    | '/asset-report'
     | '/categories'
     | '/category-suggestions'
     | '/dependencies'
@@ -442,7 +466,9 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
+    | '/_authenticated/settings/extension'
     | '/_authenticated/settings/notifications'
+    | '/_authenticated/asset-report/'
     | '/_authenticated/categories/'
     | '/_authenticated/category-suggestions/'
     | '/_authenticated/dependencies/'
@@ -539,6 +565,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/asset-report/': {
+      id: '/_authenticated/asset-report/'
+      path: '/asset-report'
+      fullPath: '/asset-report/'
+      preLoaderRoute: typeof AuthenticatedAssetReportIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/categories/': {
@@ -674,6 +707,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsDisplayRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/settings/extension': {
+      id: '/_authenticated/settings/extension'
+      path: '/extension'
+      fullPath: '/settings/extension'
+      preLoaderRoute: typeof AuthenticatedSettingsExtensionRouteImport
+      parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
     '/_authenticated/settings/notifications': {
       id: '/_authenticated/settings/notifications'
       path: '/notifications'
@@ -730,6 +770,7 @@ interface AuthenticatedSettingsRouteRouteChildren {
   AuthenticatedSettingsAccountRoute: typeof AuthenticatedSettingsAccountRoute
   AuthenticatedSettingsAppearanceRoute: typeof AuthenticatedSettingsAppearanceRoute
   AuthenticatedSettingsDisplayRoute: typeof AuthenticatedSettingsDisplayRoute
+  AuthenticatedSettingsExtensionRoute: typeof AuthenticatedSettingsExtensionRoute
   AuthenticatedSettingsNotificationsRoute: typeof AuthenticatedSettingsNotificationsRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
 }
@@ -739,6 +780,7 @@ const AuthenticatedSettingsRouteRouteChildren: AuthenticatedSettingsRouteRouteCh
     AuthenticatedSettingsAccountRoute: AuthenticatedSettingsAccountRoute,
     AuthenticatedSettingsAppearanceRoute: AuthenticatedSettingsAppearanceRoute,
     AuthenticatedSettingsDisplayRoute: AuthenticatedSettingsDisplayRoute,
+    AuthenticatedSettingsExtensionRoute: AuthenticatedSettingsExtensionRoute,
     AuthenticatedSettingsNotificationsRoute:
       AuthenticatedSettingsNotificationsRoute,
     AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
@@ -753,6 +795,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
+  AuthenticatedAssetReportIndexRoute: typeof AuthenticatedAssetReportIndexRoute
   AuthenticatedCategoriesIndexRoute: typeof AuthenticatedCategoriesIndexRoute
   AuthenticatedCategorySuggestionsIndexRoute: typeof AuthenticatedCategorySuggestionsIndexRoute
   AuthenticatedDependenciesIndexRoute: typeof AuthenticatedDependenciesIndexRoute
@@ -779,6 +822,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
+  AuthenticatedAssetReportIndexRoute: AuthenticatedAssetReportIndexRoute,
   AuthenticatedCategoriesIndexRoute: AuthenticatedCategoriesIndexRoute,
   AuthenticatedCategorySuggestionsIndexRoute:
     AuthenticatedCategorySuggestionsIndexRoute,

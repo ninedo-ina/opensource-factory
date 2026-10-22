@@ -6,7 +6,7 @@
  *       /api/sync、/api/internal/trending、/api/search、/api/similar、/api/duplicates、
  *       /api/tech-stack、/api/licenses、/api/internal/licenses、/api/analysis、/api/export、
  *       /api/tag-suggestions、/api/category-suggestions、/api/reports、
- *       /api/telegram（M8-03 Bot 查询入口）
+ *       /api/asset-report（M9-02 资产报表）、/api/telegram（M8-03 Bot 查询入口）
  */
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
@@ -34,6 +34,7 @@ import rerankRoutes from './routes/rerank';
 import duplicatesRoutes from './routes/duplicates';
 import techStackRoutes from './routes/tech-stack';
 import starTrendsRoutes from './routes/star-trends';
+import assetReportRoutes from './routes/asset-report';
 import analysisRoutes from './routes/analysis';
 import exportRoutes from './routes/export';
 import tagSuggestionRoutes from './routes/tag-suggestions';
@@ -190,6 +191,7 @@ app.route('/api/rerank', rerankRoutes);
 app.route('/api/duplicates', duplicatesRoutes);
 app.route('/api/tech-stack', techStackRoutes);
 app.route('/api/star-trends', starTrendsRoutes);
+app.route('/api/asset-report', assetReportRoutes);
 app.route('/api/analysis', analysisRoutes);
 app.route('/api/export', exportRoutes);
 app.route('/api/tag-suggestions', tagSuggestionRoutes);
