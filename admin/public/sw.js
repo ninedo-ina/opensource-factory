@@ -8,7 +8,7 @@
  * - /api/*、非 GET、跨域请求一律不拦截，避免缓存鉴权数据。
  */
 
-const CACHE_VERSION = '2026-10-22-1'
+const CACHE_VERSION = '2026-10-22-2'
 const APP_SHELL_CACHE = `of-app-shell-${CACHE_VERSION}`
 const RUNTIME_CACHE = `of-runtime-${CACHE_VERSION}`
 
@@ -46,6 +46,22 @@ self.addEventListener('activate', (event) => {
         )
       )
       .then(() => self.clients.claim())
+  )
+})
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type !== 'OF_CLEAR_CACHES') return
+  event.waitUntil(
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => key.startsWith('of-runtime-'))
+            .map((key) => caches.delete(key))
+        )
+      )
+      .then(() => event.source?.postMessage?.({ type: 'OF_CACHES_CLEARED' }))
   )
 })
 

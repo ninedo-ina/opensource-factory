@@ -27,6 +27,7 @@ import { Route as AuthenticatedExportIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedLicensesIndexRouteImport } from './routes/_authenticated/licenses/index'
 import { Route as AuthenticatedMonitoringIndexRouteImport } from './routes/_authenticated/monitoring/index'
 import { Route as AuthenticatedNotificationsIndexRouteImport } from './routes/_authenticated/notifications/index'
+import { Route as AuthenticatedOfflineIndexRouteImport } from './routes/_authenticated/offline/index'
 import { Route as AuthenticatedRecommendIndexRouteImport } from './routes/_authenticated/recommend/index'
 import { Route as AuthenticatedReposIndexRouteImport } from './routes/_authenticated/repos/index'
 import { Route as AuthenticatedSearchIndexRouteImport } from './routes/_authenticated/search/index'
@@ -139,6 +140,12 @@ const AuthenticatedNotificationsIndexRoute =
     path: '/notifications/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedOfflineIndexRoute =
+  AuthenticatedOfflineIndexRouteImport.update({
+    id: '/offline/',
+    path: '/offline/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedRecommendIndexRoute =
   AuthenticatedRecommendIndexRouteImport.update({
     id: '/recommend/',
@@ -233,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/licenses/': typeof AuthenticatedLicensesIndexRoute
   '/monitoring/': typeof AuthenticatedMonitoringIndexRoute
   '/notifications/': typeof AuthenticatedNotificationsIndexRoute
+  '/offline/': typeof AuthenticatedOfflineIndexRoute
   '/recommend/': typeof AuthenticatedRecommendIndexRoute
   '/repos/': typeof AuthenticatedReposIndexRoute
   '/search/': typeof AuthenticatedSearchIndexRoute
@@ -263,6 +271,7 @@ export interface FileRoutesByTo {
   '/licenses': typeof AuthenticatedLicensesIndexRoute
   '/monitoring': typeof AuthenticatedMonitoringIndexRoute
   '/notifications': typeof AuthenticatedNotificationsIndexRoute
+  '/offline': typeof AuthenticatedOfflineIndexRoute
   '/recommend': typeof AuthenticatedRecommendIndexRoute
   '/repos': typeof AuthenticatedReposIndexRoute
   '/search': typeof AuthenticatedSearchIndexRoute
@@ -296,6 +305,7 @@ export interface FileRoutesById {
   '/_authenticated/licenses/': typeof AuthenticatedLicensesIndexRoute
   '/_authenticated/monitoring/': typeof AuthenticatedMonitoringIndexRoute
   '/_authenticated/notifications/': typeof AuthenticatedNotificationsIndexRoute
+  '/_authenticated/offline/': typeof AuthenticatedOfflineIndexRoute
   '/_authenticated/recommend/': typeof AuthenticatedRecommendIndexRoute
   '/_authenticated/repos/': typeof AuthenticatedReposIndexRoute
   '/_authenticated/search/': typeof AuthenticatedSearchIndexRoute
@@ -329,6 +339,7 @@ export interface FileRouteTypes {
     | '/licenses/'
     | '/monitoring/'
     | '/notifications/'
+    | '/offline/'
     | '/recommend/'
     | '/repos/'
     | '/search/'
@@ -359,6 +370,7 @@ export interface FileRouteTypes {
     | '/licenses'
     | '/monitoring'
     | '/notifications'
+    | '/offline'
     | '/recommend'
     | '/repos'
     | '/search'
@@ -391,6 +403,7 @@ export interface FileRouteTypes {
     | '/_authenticated/licenses/'
     | '/_authenticated/monitoring/'
     | '/_authenticated/notifications/'
+    | '/_authenticated/offline/'
     | '/_authenticated/recommend/'
     | '/_authenticated/repos/'
     | '/_authenticated/search/'
@@ -539,6 +552,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotificationsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/offline/': {
+      id: '/_authenticated/offline/'
+      path: '/offline'
+      fullPath: '/offline/'
+      preLoaderRoute: typeof AuthenticatedOfflineIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/recommend/': {
       id: '/_authenticated/recommend/'
       path: '/recommend'
@@ -661,6 +681,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLicensesIndexRoute: typeof AuthenticatedLicensesIndexRoute
   AuthenticatedMonitoringIndexRoute: typeof AuthenticatedMonitoringIndexRoute
   AuthenticatedNotificationsIndexRoute: typeof AuthenticatedNotificationsIndexRoute
+  AuthenticatedOfflineIndexRoute: typeof AuthenticatedOfflineIndexRoute
   AuthenticatedRecommendIndexRoute: typeof AuthenticatedRecommendIndexRoute
   AuthenticatedReposIndexRoute: typeof AuthenticatedReposIndexRoute
   AuthenticatedSearchIndexRoute: typeof AuthenticatedSearchIndexRoute
@@ -683,6 +704,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedLicensesIndexRoute: AuthenticatedLicensesIndexRoute,
   AuthenticatedMonitoringIndexRoute: AuthenticatedMonitoringIndexRoute,
   AuthenticatedNotificationsIndexRoute: AuthenticatedNotificationsIndexRoute,
+  AuthenticatedOfflineIndexRoute: AuthenticatedOfflineIndexRoute,
   AuthenticatedRecommendIndexRoute: AuthenticatedRecommendIndexRoute,
   AuthenticatedReposIndexRoute: AuthenticatedReposIndexRoute,
   AuthenticatedSearchIndexRoute: AuthenticatedSearchIndexRoute,

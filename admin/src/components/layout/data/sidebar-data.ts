@@ -7,6 +7,7 @@ import {
   FolderGit2,
   FolderTree,
   GitMerge,
+  HardDriveDownload,
   LayoutDashboard,
   Monitor,
   Network,
@@ -58,6 +59,7 @@ export const sidebarData: SidebarData = {
       title: '系统',
       items: [
         { title: '系统监控', url: '/monitoring', icon: Activity },
+        { title: '离线数据', url: '/offline', icon: HardDriveDownload },
         {
           title: '设置',
           icon: Settings,

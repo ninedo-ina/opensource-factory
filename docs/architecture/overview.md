@@ -65,6 +65,14 @@
 - 移动端（`< md`）显示底部主导航（仪表盘 / 仓库 / 热榜 / 推荐），使用 `env(safe-area-inset-*)` 适配刘海与底部安全区；仓库页切换为卡片列表，热榜隐藏次要信息，搜索与配置入口按断点收窄；
 - 安装引导由 `src/components/pwa/pwa-provider.tsx` 统一处理：Android / 桌面使用 `beforeinstallprompt`，iOS Safari 展示「分享 → 添加到主屏幕」说明，关闭后 7 天冷却。
 
+### 1.3 离线数据（REQ-202610-0976 / M8-07）
+
+- **两层缓存边界**：App Shell（HTML / 静态资源 / 离线页）由 Service Worker 的 Cache Storage 负责；业务数据由 IndexedDB（`of-offline` v1）负责，两者互不混用，`/api/*` 始终不进入 Cache Storage；
+- **快照**：`admin/src/lib/offline-fetch.ts` 对仓库 / 分类 / 仪表盘统计 / 热榜 / 推荐等只读接口做网络优先读取，成功后按 `用户 + 缓存版本 + 路径` 写入 `snapshots`；网络错误或 5xx 回退快照，401 / 4xx 不展示缓存；单条上限 512 KB；
+- **离线写队列**：`admin/src/lib/offline-mutations.ts` 仅接收收藏 / 取消收藏 / 收藏推荐等幂等操作（`mutations`，上限 100 条），联网后按创建顺序回放；4xx 丢弃、网络 / 5xx 保留；
+- **会话**：登录成功写入 `of.offline.user`（仅 id / 昵称 / 头像等最小信息，不含令牌）；离线刷新时允许用该信息进入应用，联网后以 `/api/auth/me` 刷新；
+- **清理**：退出登录与 `/offline` 页面清理会同时删除当前用户的快照、队列、最小用户信息和 Service Worker 运行时缓存。
+
 ## 2. 组件职责
 
 | 组件 | 目录 | 职责 | 不该做的事 |

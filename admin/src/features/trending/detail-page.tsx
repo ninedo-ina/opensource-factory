@@ -85,7 +85,13 @@ export function TrendingDetail({ owner, name }: TrendingDetailProps) {
       )
       queryClient.invalidateQueries({ queryKey: ['trending'] })
       queryClient.invalidateQueries({ queryKey: ['repos'] })
-      toast.success(result.favorited ? '已收藏到我的仓库' : '已取消收藏')
+      toast.success(
+        result.queued
+          ? '已离线收藏，联网后自动同步'
+          : result.favorited
+            ? '已收藏到我的仓库'
+            : '已取消收藏'
+      )
     },
     onError: (error) => toast.error(favoriteErrorMessage(error)),
   })

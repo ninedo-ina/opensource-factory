@@ -87,8 +87,12 @@ export function Recommend() {
   async function handleSave(item: Recommendation) {
     setPending({ id: item.id, kind: 'save' })
     try {
-      await saveRecommendation(item.id)
-      toast.success(`已收藏 ${item.owner}/${item.name}`)
+      const result = await saveRecommendation(item.id)
+      toast.success(
+        result.queued
+          ? `已离线收藏 ${item.owner}/${item.name}，联网后自动同步`
+          : `已收藏 ${item.owner}/${item.name}`
+      )
       await refresh()
     } catch {
       toast.error('收藏失败，请稍后重试')

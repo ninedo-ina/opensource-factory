@@ -1,4 +1,7 @@
-import { apiFetch, DEMO_MODE } from '@/lib/api'
+import { apiFetch } from '@/lib/api'
+import { fetchWithOffline } from '@/lib/offline-fetch'
+import { queueOfflineMutation } from '@/lib/offline-mutations'
+import { shouldQueueOffline } from '@/lib/offline-cache'
 
 export type RecommendationStatus = 'new' | 'saved' | 'dismissed' | 'pushed'
 export type RecommendationFilter = 'new' | 'saved' | 'dismissed' | 'all'
@@ -31,6 +34,8 @@ export interface RecommendationActionResult {
   ok: boolean
   status?: RecommendationStatus
   repoId?: string
+  /** 离线排队：联网后自动同步 */
+  queued?: boolean
 }
 
 export const MOCK_RECOMMENDATIONS: Recommendation[] = [
@@ -93,45 +98,39 @@ const EMPTY_STATS: RecommendationStats = {
 export async function fetchRecommendations(
   status: RecommendationFilter = 'new'
 ): Promise<Recommendation[]> {
-  try {
-    return await apiFetch<Recommendation[]>(
-      `/api/recommendations?status=${encodeURIComponent(status)}&limit=50`
-    )
-  } catch (error) {
-    if (DEMO_MODE) {
-      // eslint-disable-next-line no-console
-      console.info('[opensource-factory] 推荐接口不可用，使用演示数据')
-      return MOCK_RECOMMENDATIONS.filter(
-        (item) => status === 'all' || item.status === status
-      )
-    }
-    throw error
-  }
+  const fallback = MOCK_RECOMMENDATIONS.filter(
+    (item) => status === 'all' || item.status === status
+  )
+  return fetchWithOffline<Recommendation[]>(
+    `/api/recommendations?status=${encodeURIComponent(status)}&limit=50`,
+    fallback
+  )
 }
 
 /** 推荐统计（各状态数量 + 点击反馈数）。 */
 export async function fetchRecommendationStats(): Promise<RecommendationStats> {
-  try {
-    return await apiFetch<RecommendationStats>('/api/recommendations/stats')
-  } catch (error) {
-    if (DEMO_MODE) {
-      return {
-        ...EMPTY_STATS,
-        new: MOCK_RECOMMENDATIONS.length,
-      }
-    }
-    throw error
-  }
+  return fetchWithOffline<RecommendationStats>('/api/recommendations/stats', {
+    ...EMPTY_STATS,
+    new: MOCK_RECOMMENDATIONS.length,
+  })
 }
 
 /** 收藏推荐：同时写入「我的仓库」并落 saved 反馈。 */
 export async function saveRecommendation(
   id: string
 ): Promise<RecommendationActionResult> {
-  return apiFetch<RecommendationActionResult>(
-    `/api/recommendations/${encodeURIComponent(id)}/save`,
-    { method: 'POST' }
-  )
+  const path = `/api/recommendations/${encodeURIComponent(id)}/save`
+  try {
+    return await apiFetch<RecommendationActionResult>(path, { method: 'POST' })
+  } catch (error) {
+    if (shouldQueueOffline(error)) {
+      const queued = await queueOfflineMutation(path, 'POST', {
+        label: '收藏推荐',
+      })
+      if (queued) return { ok: true, status: 'saved', queued: true }
+    }
+    throw error
+  }
 }
 
 /** 忽略推荐：可选原因会随 dismissed 反馈落库。 */

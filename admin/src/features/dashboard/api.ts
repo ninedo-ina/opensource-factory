@@ -1,4 +1,4 @@
-import { fetchWithFallback } from '@/lib/api'
+import { fetchWithOffline } from '@/lib/offline-fetch'
 
 export interface DashboardStats {
   totalRepos: number
@@ -79,11 +79,11 @@ export const MOCK_TRENDING: TrendingItem[] = [
 ]
 
 export function fetchDashboardStats(): Promise<DashboardStats> {
-  return fetchWithFallback<DashboardStats>('/api/dashboard/stats', MOCK_DASHBOARD_STATS)
+  return fetchWithOffline<DashboardStats>('/api/dashboard/stats', MOCK_DASHBOARD_STATS)
 }
 
 export function fetchRecentTrending(): Promise<TrendingItem[]> {
-  return fetchWithFallback<TrendingItem[]>(
+  return fetchWithOffline<TrendingItem[]>(
     '/api/trending?limit=5',
     MOCK_TRENDING
   )

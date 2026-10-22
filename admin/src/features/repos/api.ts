@@ -1,4 +1,5 @@
-import { apiFetch, fetchWithFallback } from '@/lib/api'
+import { apiFetch } from '@/lib/api'
+import { fetchWithOffline } from '@/lib/offline-fetch'
 import type { LicenseInfo } from '@/features/licenses/api'
 import { HEALTH_LABELS, type RepoHealth } from './health'
 
@@ -253,7 +254,7 @@ export const MOCK_REPOS: RepoItem[] = [
 ]
 
 export function fetchRepos(): Promise<RepoItem[]> {
-  return fetchWithFallback<RepoItem[]>('/api/repos', MOCK_REPOS)
+  return fetchWithOffline<RepoItem[]>('/api/repos', MOCK_REPOS)
 }
 
 export interface RepoHealthRefreshResult {

@@ -40,3 +40,11 @@ export function registerServiceWorker(): void {
     window.addEventListener('load', register, { once: true })
   }
 }
+
+
+/** 退出登录时清理运行时缓存（IndexedDB 由调用方清理）。 */
+export function clearServiceWorkerCaches(): void {
+  if (typeof navigator === 'undefined') return
+  if (!('serviceWorker' in navigator)) return
+  navigator.serviceWorker.controller?.postMessage({ type: 'OF_CLEAR_CACHES' })
+}

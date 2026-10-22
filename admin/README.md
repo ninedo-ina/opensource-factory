@@ -23,6 +23,7 @@
 | `/dependencies`         | 依赖分析   | 技术栈分布、热门依赖、生态构成与仓库覆盖（M6-07）                                       |
 | `/tag-suggestions`      | 打标建议   | 基于摘要的标签建议，按仓库分组，支持单条 / 整仓采纳与忽略（M7-01）                      |
 | `/category-suggestions` | 分类建议   | 按业务线自动生成可解释的分类建议，支持采纳写回分类 / 忽略（M7-02）                      |
+| `/offline`              | 离线数据   | 本地快照 / 待同步操作 / 存储占用与清理（M8-07）                                          |
 | `/sign-in`              | 登录       | 仅 GitHub 授权登录（+ 演示模式）                                                        |
 
 ## 技术栈
@@ -43,6 +44,15 @@
 - **安装引导**：`src/components/pwa/pwa-provider.tsx` 监听 `beforeinstallprompt` / `appinstalled`，桌面与 Android 提供安装按钮，iOS Safari 展示「分享 → 添加到主屏幕」说明；关闭后 7 天内不再提示（`src/lib/pwa.ts`）。
 - **移动端**：`src/components/layout/mobile-tab-bar.tsx` 在 `< md` 显示底部主导航（仪表盘 / 仓库 / 热榜 / 推荐），配合 `env(safe-area-inset-*)` 适配刘海与底部安全区；仓库页在窄屏切换为卡片列表，热榜隐藏次要列，搜索与配置入口按断点收窄。
 - **注册时机**：`src/lib/service-worker.ts` 仅在 `import.meta.env.PROD` 下注册，开发模式不启用缓存，避免调试时读到旧资源。
+
+## 离线数据（M8-07）
+
+- **本地快照**：只读接口（仓库 / 分类 / 仪表盘统计 / 热榜 / 推荐）成功后写入 IndexedDB（`of-offline` v1 的 `snapshots`），按用户 + 缓存版本隔离；单条快照上限 512 KB，超限不落库。
+- **读取策略**：`fetchWithOffline` 网络优先；网络错误或 5xx 时回退本地快照，401 / 4xx 不展示缓存。离线时顶部横幅提示「显示本地数据」与最近同步时间。
+- **离线写队列**：收藏 / 取消收藏 / 收藏推荐按白名单进入 `mutations` 队列（上限 100 条），恢复联网后按创建顺序回放；4xx 业务失败直接丢弃并计数，网络 / 5xx 保留重试。
+- **会话恢复**：登录成功后仅缓存最小用户信息（`of.offline.user`，不含 token）；离线刷新时 `AuthenticatedLayout` 用该信息维持会话，联网后以 `/api/auth/me` 为准。
+- **清理**：退出登录清空当前用户快照、队列、最小用户信息与 Service Worker 运行时缓存；`/offline` 页面可查看数据集、队列和存储占用并手动清理。
+- **边界**：`/api/*` 响应不进入 Cache Storage（Service Worker 不拦截），避免鉴权数据被共享缓存；离线期间仅保证浏览与收藏类操作，其他写操作仍提示失败。
 
 ## 本地开发
 

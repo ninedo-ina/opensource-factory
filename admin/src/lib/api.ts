@@ -5,6 +5,8 @@
  * - 本地开发：未配置 VITE_API_BASE_URL 时自动进入演示模式（DEMO_MODE），使用内置演示数据。
  */
 
+import { saveOfflineUser } from './offline-user'
+
 export const API_BASE: string =
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
 
@@ -78,7 +80,10 @@ export function githubLoginUrl(redirectTo?: string): string {
 /** 拉取当前登录用户；未登录或网络失败返回 null */
 export async function fetchCurrentUser(): Promise<AuthUser | null> {
   try {
-    return await apiFetch<AuthUser>('/api/auth/me')
+    const user = await apiFetch<AuthUser>('/api/auth/me')
+    // 保存最小用户信息，供断网时恢复界面身份（不含令牌）。
+    saveOfflineUser(user)
+    return user
   } catch {
     return null
   }

@@ -1,6 +1,10 @@
 import { useNavigate, useLocation } from '@tanstack/react-router'
 import { logout } from '@/lib/api'
+import { clearOfflineData } from '@/lib/offline-db'
+import { clearServiceWorkerCaches } from '@/lib/service-worker'
+import { clearOfflineUser } from '@/lib/offline-user'
 import { useAuthStore } from '@/stores/auth-store'
+import { useOfflineStore } from '@/stores/offline-store'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 
 interface SignOutDialogProps {
@@ -14,6 +18,11 @@ export function SignOutDialog({ open, onOpenChange }: SignOutDialogProps) {
   const { auth } = useAuthStore()
 
   const handleSignOut = () => {
+    // 清理本地缓存与离线队列，避免共用设备串号。
+    void clearOfflineData(auth.user?.id)
+    clearOfflineUser()
+    useOfflineStore.getState().reset()
+    clearServiceWorkerCaches()
     void logout() // 通知边缘服务清除会话（失败不影响本地退出）
     auth.reset()
     // 记录当前位置，登录后可跳回

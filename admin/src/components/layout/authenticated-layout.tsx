@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import { DEMO_MODE, fetchCurrentUser } from '@/lib/api'
+import { readOfflineUser } from '@/lib/offline-user'
 import { getCookie } from '@/lib/cookies'
 import { cn } from '@/lib/utils'
 import { LayoutProvider } from '@/context/layout-provider'
@@ -35,9 +36,17 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
       if (user) {
         auth.setUser(user)
         setStatus('ready')
-      } else {
-        setStatus('redirect')
+        return
       }
+      // 断网时无法校验会话：允许使用最近一次登录的最小用户信息进入，
+      // 数据请求会走 IndexedDB 快照；在线失败仍跳转登录。
+      const cachedUser = navigator.onLine === false ? readOfflineUser() : null
+      if (cachedUser) {
+        auth.setUser(cachedUser)
+        setStatus('ready')
+        return
+      }
+      setStatus('redirect')
     })
     return () => {
       cancelled = true

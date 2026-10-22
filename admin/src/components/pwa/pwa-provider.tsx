@@ -11,6 +11,15 @@ import {
   type BeforeInstallPromptEvent,
 } from '@/lib/pwa'
 import { Button } from '@/components/ui/button'
+import { formatSyncTime, summarizeSnapshots } from '@/lib/offline-cache'
+import { listSnapshots } from '@/lib/offline-db'
+import {
+  OFFLINE_MUTATIONS_SYNCED_EVENT,
+  flushOfflineMutations,
+  initOfflineMutationSync,
+  type FlushMutationsResult,
+} from '@/lib/offline-mutations'
+import { useOfflineStore } from '@/stores/offline-store'
 
 function getStandalone(): boolean {
   return isStandaloneApp({
@@ -48,8 +57,19 @@ export function PwaProvider({ children }: { children: ReactNode }) {
   const [standalone, setStandalone] = useState(getStandalone)
   const [online, setOnline] = useState(() => navigator.onLine)
   const [dismissedAt, setDismissedAt] = useState<number | null>(readDismissedAt)
+  const lastSyncAt = useOfflineStore((state) => state.lastSyncAt)
+  const cacheUsedAt = useOfflineStore((state) => state.cacheUsedAt)
+  const pendingMutations = useOfflineStore((state) => state.pendingMutations)
 
   const ios = isIosDevice(navigator.userAgent, navigator.maxTouchPoints)
+
+  useEffect(() => {
+    initOfflineMutationSync()
+    void listSnapshots().then((snapshots) => {
+      const latest = summarizeSnapshots(snapshots).latestAt
+      if (latest) useOfflineStore.getState().markSynced(latest)
+    })
+  }, [])
 
   useEffect(() => {
     const onBeforeInstall = (event: Event) => {
@@ -62,6 +82,22 @@ export function PwaProvider({ children }: { children: ReactNode }) {
     }
     const onOnline = () => setOnline(true)
     const onOffline = () => setOnline(false)
+    const onMutationsSynced = (event: Event) => {
+      const result = (event as CustomEvent<FlushMutationsResult>).detail
+      if (!result) return
+      if (result.synced > 0) {
+        toast.success(`已同步 ${result.synced} 项离线操作`, {
+          description:
+            result.remaining > 0
+              ? `还有 ${result.remaining} 项等待同步。`
+              : '本地数据已与服务器对齐。',
+        })
+      } else if (result.failed > 0) {
+        toast.error(`${result.failed} 项离线操作同步失败`, {
+          description: '可能是项目已删除或没有权限，已从队列移除。',
+        })
+      }
+    }
     const onUpdate = () => {
       toast('新版本已就绪', {
         description: '刷新页面后即可使用最新版本。',
@@ -78,6 +114,7 @@ export function PwaProvider({ children }: { children: ReactNode }) {
     window.addEventListener('online', onOnline)
     window.addEventListener('offline', onOffline)
     window.addEventListener(PWA_UPDATE_EVENT, onUpdate)
+    window.addEventListener(OFFLINE_MUTATIONS_SYNCED_EVENT, onMutationsSynced)
 
     const media = window.matchMedia?.('(display-mode: standalone)')
     const onDisplayModeChange = () => setStandalone(getStandalone())
@@ -89,6 +126,7 @@ export function PwaProvider({ children }: { children: ReactNode }) {
       window.removeEventListener('online', onOnline)
       window.removeEventListener('offline', onOffline)
       window.removeEventListener(PWA_UPDATE_EVENT, onUpdate)
+      window.removeEventListener(OFFLINE_MUTATIONS_SYNCED_EVENT, onMutationsSynced)
       media?.removeEventListener('change', onDisplayModeChange)
     }
   }, [])
@@ -125,7 +163,17 @@ export function PwaProvider({ children }: { children: ReactNode }) {
           aria-live='polite'
           className='fixed inset-x-0 top-0 z-[70] bg-amber-500 px-4 py-1.5 text-center text-xs font-medium text-white shadow-sm'
         >
-          当前离线 · 已缓存的页面仍可访问
+          当前离线 · 显示本地数据（{formatSyncTime(lastSyncAt ?? cacheUsedAt)}）
+          {pendingMutations > 0 ? ` · ${pendingMutations} 项待同步` : ''}
+          <button
+            type='button'
+            className='ml-2 underline underline-offset-2'
+            onClick={() => {
+              void flushOfflineMutations()
+            }}
+          >
+            重试同步
+          </button>
         </div>
       )}
 

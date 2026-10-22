@@ -1,4 +1,7 @@
-import { apiFetch, DEMO_MODE, fetchWithFallback } from '@/lib/api'
+import { apiFetch, DEMO_MODE } from '@/lib/api'
+import { fetchWithOffline } from '@/lib/offline-fetch'
+import { queueOfflineMutation } from '@/lib/offline-mutations'
+import { shouldQueueOffline } from '@/lib/offline-cache'
 import type {
   LicenseCategory,
   LicenseInfo,
@@ -104,6 +107,8 @@ export interface FavoriteResult {
   created?: boolean
   removed?: boolean
   repoId: string
+  /** 离线排队：联网后自动同步 */
+  queued?: boolean
 }
 export const MOCK_TRENDING_REPOS: TrendingRepo[] = [
   {
@@ -309,7 +314,7 @@ export function filterMockTrending(
 export function fetchTrending(
   params: TrendingQuery = {}
 ): Promise<TrendingRepo[]> {
-  return fetchWithFallback<TrendingRepo[]>(
+  return fetchWithOffline<TrendingRepo[]>(
     `/api/trending${buildTrendingQuery(params)}`,
     filterMockTrending(MOCK_TRENDING_REPOS, params)
   )
@@ -321,7 +326,7 @@ export async function fetchTrendingDates(): Promise<TrendingDatesResponse> {
     dates: MOCK_TRENDING_DATES,
     latest: MOCK_TRENDING_DATES[0] ?? null,
   }
-  const raw = await fetchWithFallback<
+  const raw = await fetchWithOffline<
     TrendingDatesResponse | Array<{ date: string; count: number }>
   >('/api/trending/dates', fallback)
   if (Array.isArray(raw)) {
@@ -338,7 +343,7 @@ export function fetchTrendingLanguages(
   for (const item of MOCK_TRENDING_REPOS) {
     counts.set(item.language, (counts.get(item.language) ?? 0) + 1)
   }
-  return fetchWithFallback<TrendingLanguagesResponse>(
+  return fetchWithOffline<TrendingLanguagesResponse>(
     `/api/trending/languages${date ? `?date=${encodeURIComponent(date)}` : ''}`,
     {
       date: date ?? MOCK_TRENDING_DATES[0] ?? null,
@@ -414,7 +419,10 @@ export async function fetchTrendingDetail(
   name: string
 ): Promise<TrendingRepoDetail> {
   if (DEMO_MODE) return mockDetail(owner, name)
-  return apiFetch<TrendingRepoDetail>(trendingDetailPath(owner, name))
+  return fetchWithOffline<TrendingRepoDetail>(
+    trendingDetailPath(owner, name),
+    mockDetail(owner, name)
+  )
 }
 
 export async function favoriteTrending(
@@ -424,9 +432,25 @@ export async function favoriteTrending(
   if (DEMO_MODE) {
     return { favorited: true, created: true, repoId: `${owner}/${name}` }
   }
-  return apiFetch<FavoriteResult>(`${trendingDetailPath(owner, name)}/favorite`, {
-    method: 'POST',
-  })
+  const path = `${trendingDetailPath(owner, name)}/favorite`
+  try {
+    return await apiFetch<FavoriteResult>(path, { method: 'POST' })
+  } catch (error) {
+    if (shouldQueueOffline(error)) {
+      const queued = await queueOfflineMutation(path, 'POST', {
+        label: `收藏 ${owner}/${name}`,
+      })
+      if (queued) {
+        return {
+          favorited: true,
+          created: true,
+          repoId: `${owner}/${name}`,
+          queued: true,
+        }
+      }
+    }
+    throw error
+  }
 }
 
 export async function unfavoriteTrending(
@@ -436,9 +460,25 @@ export async function unfavoriteTrending(
   if (DEMO_MODE) {
     return { favorited: false, removed: true, repoId: `${owner}/${name}` }
   }
-  return apiFetch<FavoriteResult>(`${trendingDetailPath(owner, name)}/favorite`, {
-    method: 'DELETE',
-  })
+  const path = `${trendingDetailPath(owner, name)}/favorite`
+  try {
+    return await apiFetch<FavoriteResult>(path, { method: 'DELETE' })
+  } catch (error) {
+    if (shouldQueueOffline(error)) {
+      const queued = await queueOfflineMutation(path, 'DELETE', {
+        label: `取消收藏 ${owner}/${name}`,
+      })
+      if (queued) {
+        return {
+          favorited: false,
+          removed: true,
+          repoId: `${owner}/${name}`,
+          queued: true,
+        }
+      }
+    }
+    throw error
+  }
 }
 
 /** 相似项目推荐条目（GET /api/similar） */
@@ -517,7 +557,7 @@ export function fetchSimilarRepos(
 ): Promise<SimilarRepoItem[]> {
   const fallback = source === 'trending' ? buildSimilarFallback(repoId, topK) : []
   if (DEMO_MODE) return Promise.resolve(fallback)
-  return fetchWithFallback<SimilarRepoItem[]>(
+  return fetchWithOffline<SimilarRepoItem[]>(
     similarReposPath(source, repoId, topK),
     fallback
   ).then((items) => (Array.isArray(items) ? items : []))

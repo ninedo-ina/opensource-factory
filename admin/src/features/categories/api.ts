@@ -1,4 +1,5 @@
-import { ApiHttpError, apiFetch, fetchWithFallback } from '@/lib/api'
+import { ApiHttpError, apiFetch } from '@/lib/api'
+import { fetchWithOffline } from '@/lib/offline-fetch'
 
 export interface Category {
   id: string
@@ -90,7 +91,7 @@ export function categoryErrorMessage(err: unknown): string {
 
 /** 分类 + 标签（失败时回退演示数据） */
 export function fetchCategories(): Promise<CategoriesPayload> {
-  return fetchWithFallback<CategoriesPayload>('/api/categories', {
+  return fetchWithOffline<CategoriesPayload>('/api/categories', {
     categories: MOCK_CATEGORIES,
     tags: MOCK_TAGS,
   })
