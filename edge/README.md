@@ -67,6 +67,18 @@ npm run db:migrate:local
 npx wrangler d1 execute opensource-factory --local --command "SELECT COUNT(*) FROM categories;"
 ```
 
+### 验收与测试
+
+```bash
+npm run typecheck       # TypeScript 编译检查
+npm run test:scripts    # 纯逻辑单测（分类树 / 标签 / 查询构建）
+npm run test:categories # 分类树 CRUD 端到端（本地 D1）
+npm run perf:search     # 20k 行检索基准（EXPLAIN QUERY PLAN + P95）
+npm run test:m1         # M1 验收走查（本地 D1 + mock VPS，可加 -- --strict）
+```
+
+M1 验收报告见 [`docs/planning/acceptance-m1.md`](../docs/planning/acceptance-m1.md)。
+
 ## 部署步骤
 
 1. 创建 D1 数据库并记下 `database_id`：

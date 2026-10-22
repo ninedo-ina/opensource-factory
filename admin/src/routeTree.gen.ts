@@ -27,6 +27,8 @@ import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_auth
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
+import { Route as AuthenticatedTagsIndexRouteImport } from './routes/_authenticated/tags/index'
+import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
 import { Route as AuthenticatedTrendingIndexRouteImport } from './routes/_authenticated/trending/index'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -127,6 +129,16 @@ const AuthenticatedSettingsNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedTagsIndexRoute = AuthenticatedTagsIndexRouteImport.update({
+  id: '/tags/',
+  path: '/tags/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTasksIndexRoute = AuthenticatedTasksIndexRouteImport.update({
+  id: '/tasks/',
+  path: '/tasks/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTrendingIndexRoute =
   AuthenticatedTrendingIndexRouteImport.update({
     id: '/trending/',
@@ -152,6 +164,8 @@ export interface FileRoutesByFullPath {
   '/recommend/': typeof AuthenticatedRecommendIndexRoute
   '/repos/': typeof AuthenticatedReposIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/tags/': typeof AuthenticatedTagsIndexRoute
+  '/tasks/': typeof AuthenticatedTasksIndexRoute
   '/trending/': typeof AuthenticatedTrendingIndexRoute
 }
 export interface FileRoutesByTo {
@@ -171,6 +185,8 @@ export interface FileRoutesByTo {
   '/recommend': typeof AuthenticatedRecommendIndexRoute
   '/repos': typeof AuthenticatedReposIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
+  '/tags': typeof AuthenticatedTagsIndexRoute
+  '/tasks': typeof AuthenticatedTasksIndexRoute
   '/trending': typeof AuthenticatedTrendingIndexRoute
 }
 export interface FileRoutesById {
@@ -193,6 +209,8 @@ export interface FileRoutesById {
   '/_authenticated/recommend/': typeof AuthenticatedRecommendIndexRoute
   '/_authenticated/repos/': typeof AuthenticatedReposIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/_authenticated/tags/': typeof AuthenticatedTagsIndexRoute
+  '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/trending/': typeof AuthenticatedTrendingIndexRoute
 }
 export interface FileRouteTypes {
@@ -215,6 +233,8 @@ export interface FileRouteTypes {
     | '/recommend/'
     | '/repos/'
     | '/settings/'
+    | '/tags/'
+    | '/tasks/'
     | '/trending/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -234,6 +254,8 @@ export interface FileRouteTypes {
     | '/recommend'
     | '/repos'
     | '/settings'
+    | '/tags'
+    | '/tasks'
     | '/trending'
   id:
     | '__root__'
@@ -255,6 +277,8 @@ export interface FileRouteTypes {
     | '/_authenticated/recommend/'
     | '/_authenticated/repos/'
     | '/_authenticated/settings/'
+    | '/_authenticated/tags/'
+    | '/_authenticated/tasks/'
     | '/_authenticated/trending/'
   fileRoutesById: FileRoutesById
 }
@@ -396,6 +420,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsNotificationsRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/tags/': {
+      id: '/_authenticated/tags/'
+      path: '/tags'
+      fullPath: '/tags/'
+      preLoaderRoute: typeof AuthenticatedTagsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/tasks/': {
+      id: '/_authenticated/tasks/'
+      path: '/tasks'
+      fullPath: '/tasks/'
+      preLoaderRoute: typeof AuthenticatedTasksIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/trending/': {
       id: '/_authenticated/trending/'
       path: '/trending'
@@ -436,6 +474,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCategoriesIndexRoute: typeof AuthenticatedCategoriesIndexRoute
   AuthenticatedRecommendIndexRoute: typeof AuthenticatedRecommendIndexRoute
   AuthenticatedReposIndexRoute: typeof AuthenticatedReposIndexRoute
+  AuthenticatedTagsIndexRoute: typeof AuthenticatedTagsIndexRoute
+  AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedTrendingIndexRoute: typeof AuthenticatedTrendingIndexRoute
 }
 
@@ -446,6 +486,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCategoriesIndexRoute: AuthenticatedCategoriesIndexRoute,
   AuthenticatedRecommendIndexRoute: AuthenticatedRecommendIndexRoute,
   AuthenticatedReposIndexRoute: AuthenticatedReposIndexRoute,
+  AuthenticatedTagsIndexRoute: AuthenticatedTagsIndexRoute,
+  AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedTrendingIndexRoute: AuthenticatedTrendingIndexRoute,
 }
 

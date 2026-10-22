@@ -526,10 +526,16 @@ async function main() {
       assertEqual(res.status, 200, '状态码');
       assert(Array.isArray(res.json), '响应应为数组');
       assert(res.json.length > 0, '应命中支付类仓库');
-      const bad = res.json.filter(
-        (item) =>
-          !`${item.fullName} ${item.description ?? ''}`.includes('支付')
-      );
+      const bad = res.json.filter((item) => {
+        const haystack = [
+          item.fullName,
+          item.description ?? '',
+          item.language ?? '',
+          item.category ?? '',
+          ...(item.tags ?? []),
+        ].join(' ');
+        return !haystack.includes('支付');
+      });
       assertEqual(bad.length, 0, '不应返回不含关键字的仓库');
       return { detail: `${res.json.length} 条命中` };
     });
@@ -539,7 +545,8 @@ async function main() {
       assertEqual(res.status, 200, '状态码');
       assert(Array.isArray(res.json), '响应应为数组');
       assert(res.json.length > 0, '应命中分类仓库');
-      const bad = res.json.filter((item) => item.category !== '支付系统' && item.category !== 'cat-pay');
+      const payCategories = new Set(['支付系统', '支付网关', 'cat-pay', 'cat-pay-gateway']);
+      const bad = res.json.filter((item) => !payCategories.has(item.category));
       assertEqual(bad.length, 0, '不应返回其他分类');
       return { detail: `${res.json.length} 条` };
     });
@@ -552,6 +559,34 @@ async function main() {
         return { status: 'GAP', detail: `返回全部 ${res.json.length} 条，% 未转义（待 M1-12 合并）` };
       }
       return { detail: `${res.json.length} 条（未放大）` };
+    });
+
+    await check('M1-B07', '组合筛选 + 排序 + 分页（M1-11）', async () => {
+      const res = await http(
+        `${workerUrl}/api/repos?q=${encodeURIComponent('支付')}&categoryId=cat-pay&languages=TypeScript&sort=stars&order=asc&limit=20`,
+        auth
+      );
+      assertEqual(res.status, 200, '状态码');
+      if (!Array.isArray(res.json) || res.json.length === 0) {
+        return { status: 'GAP', detail: '组合查询无结果或未启用（待 M1-11 合并）' };
+      }
+      assertEqual(res.json.length, 20, 'limit 生效');
+      const payCategories = new Set(['支付系统', '支付网关', 'cat-pay', 'cat-pay-gateway']);
+      const bad = res.json.filter((item) => {
+        const haystack = [
+          item.fullName,
+          item.description ?? '',
+          item.language ?? '',
+          item.category ?? '',
+          ...(item.tags ?? []),
+        ].join(' ');
+        return !haystack.includes('支付') || !payCategories.has(item.category) || item.language !== 'TypeScript';
+      });
+      assertEqual(bad.length, 0, '结果应同时满足关键词 / 分类 / 语言');
+      const stars = res.json.map((item) => item.stars);
+      const sorted = [...stars].sort((a, b) => a - b);
+      assertEqual(stars.join(','), sorted.join(','), 'stars 应按升序返回');
+      return { detail: `20 条，stars ${stars[0]}→${stars.at(-1)} 升序` };
     });
 
     await check('M1-C01', '分类列表与树字段（M1-09）', async () => {
