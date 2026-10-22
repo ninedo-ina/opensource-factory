@@ -699,6 +699,28 @@ admin 设置 → 通知设置 → Telegram 查询 Bot
 - 所有查询 SQL 都带 `user_id`，未绑定会话不会读到任何用户数据；
 - 绑定码一次性使用，绑定成功 / 过期后即删除；重新绑定会替换该用户旧会话。
 
+### 3.35 个人技术画像（M9-01）
+
+```
+admin /tech-profile → GET /api/tech-profile?months=12（登录态）
+→ edge 读取 D1 my_repositories（语言 / Star / Fork / 入库时间 / 最近推送 / 健康度 / 分类）
+   + categories + repo_tags / tags（框架识别）
+→ 纯函数 buildTechProfile 聚合：
+   语言分布（仓库数 / Star / 占比 / 平均 Star）
+   → 框架分布（复用 M6-04 识别，含分类与关联语言）
+   → 分类分布、Top 收藏仓库
+   → 收藏趋势（近 1–24 月每月新增 / 累计 / 峰值 / 连续月）
+   → 推送活跃度分桶（7d / 30d / 90d / 180d / 365d / 一年以上 / 未知）
+   → 活跃度分与画像类型（多语言探索者 / 单栈深耕者 / 全栈实践者 / 均衡开发者）
+   → 确定性洞察（主力语言 / 常用框架 / 活跃度 / 收藏节奏 / 多样性）
+→ admin 渲染 KPI、画像卡、语言 / 框架条形榜、月度柱状图、推送分桶、Top 仓库与洞察卡
+```
+
+口径：活跃仓库 = `pushed_at` 距生成时间 ≤ 90 天；沉寂仓库 = > 180 天且未归档；
+活跃度分 = 活跃仓库占比 × 50% + 近 90 天新增收藏占比 × 30% + 近 6 个月有新增月份占比 × 20%，
+取整 0–100（≥70 活跃 / ≥40 平稳 / 其余偏低）。收藏趋势按 `created_at` 的 UTC 月份统计，
+即 D1 入库时间而非 GitHub `starred_at`（见 Q36）。只读聚合，不新增表 / 迁移，不依赖 VPS。
+
 ## 4. 接口边界
 
 ### 4.1 admin ↔ edge（JSON over HTTPS，Cookie 会话）
@@ -751,6 +773,7 @@ admin 设置 → 通知设置 → Telegram 查询 Bot
 | `/api/sync` | POST | 触发同步任务（202） |
 | `/api/search/semantic` | POST | 语义搜索（`query` / `topK` / `scope`；vectorize → local → keyword 三级降级） |
 | `/api/tech-stack` | GET | 技术栈图谱（登录态；语言 / 框架聚合 + 语言 × 框架关系图，Top 8 × 16） |
+| `/api/tech-profile` | GET | 个人技术画像（登录态；`months=1..24`；语言 / 框架分布、收藏趋势、活跃度分与画像类型，只读聚合） |
 | `/api/star-trends` | GET | Star 趋势与洞察（登录态；`days=1..365` / `scope=trending\|my` / `language`；快照只读聚合） |
 | `/api/monitoring/overview` | GET | 监控总览（登录态；合并 VPS 状态与 Workers 指标，`?days=1..30`） |
 | `/api/monitoring/check` | POST | 触发一次 VPS 监控检查（登录态代理） |

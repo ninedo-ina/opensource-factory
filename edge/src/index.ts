@@ -4,9 +4,9 @@
  * 路由：/api/auth、/api/repos、/api/trending、/api/recommendations、
  *       /api/notifications、/api/push-preferences、/api/categories、/api/dashboard、
  *       /api/sync、/api/internal/trending、/api/search、/api/similar、/api/duplicates、
- *       /api/tech-stack、/api/licenses、/api/internal/licenses、/api/analysis、/api/export、
- *       /api/tag-suggestions、/api/category-suggestions、/api/reports、
- *       /api/telegram（M8-03 Bot 查询入口）
+ *       /api/tech-stack、/api/tech-profile、/api/licenses、/api/internal/licenses、
+ *       /api/analysis、/api/export、/api/tag-suggestions、/api/category-suggestions、
+ *       /api/reports、/api/telegram（M8-03 Bot 查询入口）
  */
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
@@ -33,6 +33,7 @@ import similarRoutes from './routes/similar';
 import rerankRoutes from './routes/rerank';
 import duplicatesRoutes from './routes/duplicates';
 import techStackRoutes from './routes/tech-stack';
+import techProfileRoutes from './routes/tech-profile';
 import starTrendsRoutes from './routes/star-trends';
 import analysisRoutes from './routes/analysis';
 import exportRoutes from './routes/export';
@@ -189,6 +190,7 @@ app.route('/api/similar', similarRoutes);
 app.route('/api/rerank', rerankRoutes);
 app.route('/api/duplicates', duplicatesRoutes);
 app.route('/api/tech-stack', techStackRoutes);
+app.route('/api/tech-profile', techProfileRoutes);
 app.route('/api/star-trends', starTrendsRoutes);
 app.route('/api/analysis', analysisRoutes);
 app.route('/api/export', exportRoutes);
