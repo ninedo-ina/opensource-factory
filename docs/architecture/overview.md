@@ -738,6 +738,26 @@ admin /tech-profile → GET /api/tech-profile?months=12（登录态）
 活跃度分 = 活跃仓库占比 × 50% + 近 90 天新增收藏占比 × 30% + 近 6 个月有新增月份占比 × 20%，
 取整 0–100（≥70 活跃 / ≥40 平稳 / 其余偏低）。收藏趋势按 `created_at` 的 UTC 月份统计，
 即 D1 入库时间而非 GitHub `starred_at`（见 Q37）。只读聚合，不新增表 / 迁移，不依赖 VPS。
+### 3.37 资产报表流（M9-02）
+
+```
+admin /asset-report → GET /api/asset-report?months=6|12|24（登录态，默认 12）
+→ edge 读取 D1：my_repositories（当前用户全量）/ categories（分类名）
+   / trending_snapshots（近 months × 30 天，按收藏仓库白名单分片查询）
+→ 纯函数 buildAssetReport 聚合：
+   收录量（UTC 自然月新增 / 累计、近 7/30/90/365 天、平台分布）
+   → 分类分布（含「未分类」、占比 / Star / 平均 Star / 主要语言）
+   → 语言分布（复用 M6-04 normalizeLanguage）
+   → Star 趋势（复用 M7-05 buildStarTrends，scope=my，含覆盖率与 Top Movers）
+   → 确定性洞察（收录节奏 / 增长 / 分类集中度 / 未分类 / Star 头部 / 快照覆盖）
+→ admin 渲染 KPI、收录量柱线图、分类 / 语言分布、Star 面积图、Top Movers、分类明细，
+   支持 6/12/24 月窗口与 CSV 导出
+```
+
+口径：收录量按 `created_at` 的 UTC 自然月统计，窗口起点为当前月往前 `months - 1` 个月的 1 日；
+`created_at` 缺失的仓库计入 `unknownCreated`，不进入月度分布。Star 存量为当前 `stars` 合计，
+Star 趋势只覆盖上过热榜、有快照的收藏仓库（不补零），覆盖率 = 有快照仓库 / 收藏总数。
+只读聚合，不新增表 / 迁移，也不依赖 VPS。
 
 ## 4. 接口边界
 
@@ -793,6 +813,7 @@ admin /tech-profile → GET /api/tech-profile?months=12（登录态）
 | `/api/tech-stack` | GET | 技术栈图谱（登录态；语言 / 框架聚合 + 语言 × 框架关系图，Top 8 × 16） |
 | `/api/tech-profile` | GET | 个人技术画像（登录态；`months=1..24`；语言 / 框架分布、收藏趋势、活跃度分与画像类型，只读聚合） |
 | `/api/star-trends` | GET | Star 趋势与洞察（登录态；`days=1..365` / `scope=trending\|my` / `language`；快照只读聚合） |
+| `/api/asset-report` | GET | 资产报表（登录态；`months=6\|12\|24`，默认 12；收录量 / 分类分布 / 语言 / Star 趋势只读聚合） |
 | `/api/monitoring/overview` | GET | 监控总览（登录态；合并 VPS 状态与 Workers 指标，`?days=1..30`） |
 | `/api/monitoring/check` | POST | 触发一次 VPS 监控检查（登录态代理） |
 | `/api/monitoring/alerts/:id/ack` | POST | 确认监控告警（登录态代理） |

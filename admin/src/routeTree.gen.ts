@@ -18,6 +18,7 @@ import { Route as errors500RouteImport } from './routes/(errors)/500'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
+import { Route as AuthenticatedAssetReportIndexRouteImport } from './routes/_authenticated/asset-report/index'
 import { Route as AuthenticatedCategoriesIndexRouteImport } from './routes/_authenticated/categories/index'
 import { Route as AuthenticatedCategorySuggestionsIndexRouteImport } from './routes/_authenticated/category-suggestions/index'
 import { Route as AuthenticatedDependenciesIndexRouteImport } from './routes/_authenticated/dependencies/index'
@@ -90,6 +91,12 @@ const AuthenticatedSettingsRouteRoute =
   AuthenticatedSettingsRouteRouteImport.update({
     id: '/settings',
     path: '/settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAssetReportIndexRoute =
+  AuthenticatedAssetReportIndexRouteImport.update({
+    id: '/asset-report/',
+    path: '/asset-report/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCategoriesIndexRoute =
@@ -275,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/extension': typeof AuthenticatedSettingsExtensionRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/asset-report/': typeof AuthenticatedAssetReportIndexRoute
   '/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/category-suggestions/': typeof AuthenticatedCategorySuggestionsIndexRoute
   '/dependencies/': typeof AuthenticatedDependenciesIndexRoute
@@ -312,6 +320,7 @@ export interface FileRoutesByTo {
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/extension': typeof AuthenticatedSettingsExtensionRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/asset-report': typeof AuthenticatedAssetReportIndexRoute
   '/categories': typeof AuthenticatedCategoriesIndexRoute
   '/category-suggestions': typeof AuthenticatedCategorySuggestionsIndexRoute
   '/dependencies': typeof AuthenticatedDependenciesIndexRoute
@@ -352,6 +361,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/settings/extension': typeof AuthenticatedSettingsExtensionRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/_authenticated/asset-report/': typeof AuthenticatedAssetReportIndexRoute
   '/_authenticated/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/_authenticated/category-suggestions/': typeof AuthenticatedCategorySuggestionsIndexRoute
   '/_authenticated/dependencies/': typeof AuthenticatedDependenciesIndexRoute
@@ -392,6 +402,7 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/settings/extension'
     | '/settings/notifications'
+    | '/asset-report/'
     | '/categories/'
     | '/category-suggestions/'
     | '/dependencies/'
@@ -429,6 +440,7 @@ export interface FileRouteTypes {
     | '/settings/display'
     | '/settings/extension'
     | '/settings/notifications'
+    | '/asset-report'
     | '/categories'
     | '/category-suggestions'
     | '/dependencies'
@@ -468,6 +480,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/display'
     | '/_authenticated/settings/extension'
     | '/_authenticated/settings/notifications'
+    | '/_authenticated/asset-report/'
     | '/_authenticated/categories/'
     | '/_authenticated/category-suggestions/'
     | '/_authenticated/dependencies/'
@@ -565,6 +578,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/asset-report/': {
+      id: '/_authenticated/asset-report/'
+      path: '/asset-report'
+      fullPath: '/asset-report/'
+      preLoaderRoute: typeof AuthenticatedAssetReportIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/categories/': {
@@ -795,6 +815,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
+  AuthenticatedAssetReportIndexRoute: typeof AuthenticatedAssetReportIndexRoute
   AuthenticatedCategoriesIndexRoute: typeof AuthenticatedCategoriesIndexRoute
   AuthenticatedCategorySuggestionsIndexRoute: typeof AuthenticatedCategorySuggestionsIndexRoute
   AuthenticatedDependenciesIndexRoute: typeof AuthenticatedDependenciesIndexRoute
@@ -822,6 +843,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
+  AuthenticatedAssetReportIndexRoute: AuthenticatedAssetReportIndexRoute,
   AuthenticatedCategoriesIndexRoute: AuthenticatedCategoriesIndexRoute,
   AuthenticatedCategorySuggestionsIndexRoute:
     AuthenticatedCategorySuggestionsIndexRoute,
