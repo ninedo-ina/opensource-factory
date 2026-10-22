@@ -1,0 +1,133 @@
+{
+  "meta": {
+    "branch": "feat/req-202610-0938-m4-acceptance",
+    "commit": "ffa395e",
+    "finishedAt": "2026-10-22T09:54:35.446Z",
+    "platform": "linux x64",
+    "nodeVersion": "v22.23.1"
+  },
+  "results": [
+    {
+      "id": "M4-02-01",
+      "title": "通知接口未登录返回 401",
+      "status": "PASS",
+      "detail": "401 unauthorized",
+      "durationMs": 33.04952899999989
+    },
+    {
+      "id": "M4-02-02",
+      "title": "pushed 推荐惰性物化为通知（本人 2 + 全局 1）",
+      "status": "PASS",
+      "detail": "3 条 · 未读 3",
+      "durationMs": 50.398081999999704
+    },
+    {
+      "id": "M4-02-03",
+      "title": "重复读取不重复物化（幂等）",
+      "status": "PASS",
+      "detail": "total 保持 3",
+      "durationMs": 92.10239999999976
+    },
+    {
+      "id": "M4-02-04",
+      "title": "未读计数接口与列表一致",
+      "status": "PASS",
+      "detail": "unread=3",
+      "durationMs": 46.05409999999938
+    },
+    {
+      "id": "M4-02-05",
+      "title": "状态筛选与分页（limit / offset / hasMore）",
+      "status": "PASS",
+      "detail": "unread 3 · 2+1 分页",
+      "durationMs": 163.95662000000084
+    },
+    {
+      "id": "M4-02-06",
+      "title": "单条已读：状态与 readAt 生效",
+      "status": "PASS",
+      "detail": "read · unread 3 → 2",
+      "durationMs": 137.63054799999918
+    },
+    {
+      "id": "M4-02-07",
+      "title": "忽略通知：从列表移除并联动推荐 dismissed",
+      "status": "PASS",
+      "detail": "dismissed · 推荐联动 · 404 边界",
+      "durationMs": 166.064937000001
+    },
+    {
+      "id": "M4-02-08",
+      "title": "全部已读清空未读计数",
+      "status": "PASS",
+      "detail": "updated=1 · unread=0",
+      "durationMs": 54.8751740000007
+    },
+    {
+      "id": "M4-02-09",
+      "title": "内部推送接口：令牌校验 + dedupeKey 幂等",
+      "status": "PASS",
+      "detail": "created 1 → 0 · skipped 1",
+      "durationMs": 91.8041200000007
+    },
+    {
+      "id": "M4-02-10",
+      "title": "内部同步推荐：按用户物化且用户隔离",
+      "status": "PASS",
+      "detail": "created=2 · 用户隔离",
+      "durationMs": 77.40151100000003
+    },
+    {
+      "id": "M4-06-01",
+      "title": "未保存时返回默认偏好",
+      "status": "PASS",
+      "detail": "09:00 · 0.35 / 0.55 · 仅站内",
+      "durationMs": 24.36922400000003
+    },
+    {
+      "id": "M4-06-02",
+      "title": "保存偏好后回读一致",
+      "status": "PASS",
+      "detail": "07:30 Asia/Tokyo · bark/email 开启",
+      "durationMs": 81.79788600000029
+    },
+    {
+      "id": "M4-06-03",
+      "title": "非法参数返回 400 与中文提示",
+      "status": "PASS",
+      "detail": "4 类非法输入 → 400",
+      "durationMs": 138.43458499999906
+    },
+    {
+      "id": "M4-06-04",
+      "title": "内部接口按用户读取与批量列表",
+      "status": "PASS",
+      "detail": "单用户 / 未知回退 / 批量命中",
+      "durationMs": 65.44982100000016
+    },
+    {
+      "id": "M4-06-05",
+      "title": "偏好接口未登录返回 401",
+      "status": "PASS",
+      "detail": "GET / PUT 均 401",
+      "durationMs": 31.917161999999735
+    },
+    {
+      "id": "M4-P01",
+      "title": "性能抽样 P95 < 300ms",
+      "status": "PASS",
+      "detail": "P50 39.4ms / P95 49.9ms · 64 条通知",
+      "durationMs": 49.85980599999857
+    }
+  ],
+  "perf": [
+    {
+      "path": "/api/notifications?limit=20",
+      "samples": 100,
+      "p50": 39.41317699999854,
+      "p95": 49.85980599999857,
+      "max": 54.92815600000176,
+      "label": "通知列表 limit=20"
+    }
+  ]
+}

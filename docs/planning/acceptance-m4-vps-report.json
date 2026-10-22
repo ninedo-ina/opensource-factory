@@ -1,0 +1,109 @@
+{
+  "requirement": "REQ-202610-0938",
+  "milestone": "M4-09",
+  "title": "M4 验收与回顾",
+  "generatedAt": "2026-10-22T09:53:34+00:00",
+  "branch": "feat/req-202610-0938-m4-acceptance",
+  "commit": "ffa395e",
+  "environment": {
+    "database": "SQLite (temp)",
+    "runtime": "Python 3.12.3",
+    "network": "none（通道客户端全部注入假实现）"
+  },
+  "summary": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "gaps": 0,
+    "skipped": 0
+  },
+  "performance": {
+    "samples": 100,
+    "p50Ms": 12.8,
+    "p95Ms": 19.1,
+    "maxMs": 20.5,
+    "budgetMs": 300.0
+  },
+  "checks": [
+    {
+      "id": "M4-01",
+      "title": "每日评估写入质量分并产出 qualified",
+      "status": "PASS",
+      "detail": "quality=0.568 · status=qualified",
+      "error": "",
+      "durationMs": 174.1
+    },
+    {
+      "id": "M4-07A",
+      "title": "推送策略预演与事件账本",
+      "status": "PASS",
+      "detail": "policy=on · duplicate_repo 命中",
+      "error": "",
+      "durationMs": 87.2
+    },
+    {
+      "id": "M4-07B",
+      "title": "daily_push 通过策略并写事件账本",
+      "status": "PASS",
+      "detail": "pushed=1 · event=prepared",
+      "error": "",
+      "durationMs": 18.5
+    },
+    {
+      "id": "M4-03",
+      "title": "Bark 通道投递与状态接口（假客户端）",
+      "status": "PASS",
+      "detail": "sent=1 · bark_sent_at 已写入",
+      "error": "",
+      "durationMs": 87.1
+    },
+    {
+      "id": "M4-04",
+      "title": "Telegram 每日摘要（假客户端）",
+      "status": "PASS",
+      "detail": "sent=1 · items=1 · parts=1",
+      "error": "",
+      "durationMs": 43.3
+    },
+    {
+      "id": "M4-05",
+      "title": "Email 每日摘要（假 sender）",
+      "status": "PASS",
+      "detail": "sent=1 · items=1 · recipient=masked",
+      "error": "",
+      "durationMs": 41.6
+    },
+    {
+      "id": "M4-06",
+      "title": "推送偏好解析、时间窗口与阈值筛选",
+      "status": "PASS",
+      "detail": "09:00 到期 · 阈值 0.35 生效",
+      "error": "",
+      "durationMs": 1.2
+    },
+    {
+      "id": "M4-08",
+      "title": "推送记录列表 / 统计 / 详情 / 回执与脱敏",
+      "status": "PASS",
+      "detail": "records=3 · receipt=delivered · late=no-downgrade",
+      "error": "",
+      "durationMs": 106.8
+    },
+    {
+      "id": "M4-02S",
+      "title": "站内通知中心数据源（pushed 推荐）",
+      "status": "PASS",
+      "detail": "pushed 推荐已就绪（edge 侧由 m4-acceptance.mjs 走查）",
+      "error": "",
+      "durationMs": 1.5
+    },
+    {
+      "id": "M4-P01",
+      "title": "推送记录列表性能 P95 < 300ms",
+      "status": "PASS",
+      "detail": "P50=12.8ms · P95=19.1ms · Max=20.5ms · n=100",
+      "error": "",
+      "durationMs": 0
+    }
+  ]
+}

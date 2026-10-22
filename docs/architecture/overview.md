@@ -374,10 +374,6 @@ Bark / Telegram / Email 每次实际发送
 | `/api/push/policy/check` | POST | 单条推送发送前预演（不写库） |
 | `/api/push/policy/events` | GET | 查询推送事件（按用户 / 通道 / 状态） |
 | `/api/push/policy/events` | POST | 记录通道投递事件（幂等） |
-| `/api/push/records` | GET | 推送记录列表（通道 / 状态 / 类型 / 时间 / 关键字 + 分页） |
-| `/api/push/records/stats` | GET | 推送记录统计（分通道 / 分状态计数与送达率） |
-| `/api/push/records/{id}` | GET | 推送记录详情 + 回执时间线（目标脱敏） |
-| `/api/push/receipts` | POST | 追加服务商回执（accepted / delivered / bounced / failed） |
 | `/api/tasks/vectorize` | POST | 入队向量化（批量 / 增量 / 断点续跑） |
 | `/api/internal/notifications` | POST | 批量写入站内通知（`X-Internal-Token`，单批 ≤100） |
 | `/api/internal/notifications/sync-recommendations` | POST | 物化指定用户的 `pushed` 推荐为通知 |
@@ -405,9 +401,9 @@ Bark / Telegram / Email 每次实际发送
 | `/api/push/bark/status` | GET | Bark 通道状态与待投递 / 已投递 / 失败计数 |
 | `/api/push/bark/test` | POST | 同步发送 Bark 测试通知 |
 | `/api/push/bark/dispatch` | POST | 入队 Bark 投递（`user_id` / `limit` 可选） |
-| `/api/push/records` | GET | 统一推送记录（通道 / 状态 / 时间 / 关键字 + 分页） |
+| `/api/push/records` | GET | 统一推送记录（通道 / 状态 / 类型 / 时间 / 关键字 + 分页） |
 | `/api/push/records/stats` | GET | 投递统计（分通道 / 分状态 / 回执 / 送达率） |
-| `/api/push/records/{id}` | GET | 投递详情 + 回执时间线 |
+| `/api/push/records/{id}` | GET | 投递详情 + 回执时间线（目标脱敏） |
 | `/api/push/receipts` | POST | 写入送达回执（服务商 / 人工，幂等） |
 | `/healthz` | GET | 健康检查 |
 

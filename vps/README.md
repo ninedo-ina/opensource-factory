@@ -697,6 +697,21 @@ curl -sS -X POST 'http://127.0.0.1:8000/api/push/receipts' \
 - Bark / Telegram 官方 API 没有逐条送达回执，默认只有发送结果；需要精确送达时由服务商适配器或人工补记；
 - 历史 `telegram_deliveries` / `email_deliveries` 不回填，统一记录从本版本起生效。
 
+## M4 验收脚本
+
+`scripts/m4_acceptance.py` 使用临时 SQLite + FastAPI `TestClient`，注入 Bark / Telegram / Email
+假客户端，走查 M4-01/03/04/05/06/07/08 与推送记录性能（不访问网络）：
+
+```bash
+cd vps
+.venv/bin/python scripts/m4_acceptance.py --strict \
+  --report-md ../docs/planning/acceptance-m4-vps-report.md \
+  --report-json ../docs/planning/acceptance-m4-vps-report.json
+```
+
+edge 侧的站内通知中心与推送偏好由 `edge/scripts/m4-acceptance.mjs` 走查，完整矩阵见
+[docs/planning/acceptance-m4.md](../docs/planning/acceptance-m4.md)。
+
 ## 常用检查
 
 ```bash

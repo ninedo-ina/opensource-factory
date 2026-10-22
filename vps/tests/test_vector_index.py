@@ -78,6 +78,8 @@ def _isolated_db(monkeypatch):
                     dim INTEGER NOT NULL DEFAULT 0,
                     text_hash VARCHAR(64) NOT NULL DEFAULT '',
                     vector TEXT,
+                    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     PRIMARY KEY (source, repo_id)
                 )
                 """

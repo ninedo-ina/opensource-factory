@@ -70,6 +70,16 @@ def _parse_vector(raw: str | None) -> list[float]:
         return []
 
 
+def _service_model_name(service: EmbeddingService) -> str:
+    """读取服务模型名；测试替身未声明时回退到配置默认值。"""
+    return str(getattr(service, "model_name", None) or get_settings().EMBEDDING_MODEL)
+
+
+def _service_backend(service: EmbeddingService) -> str:
+    """读取向量后端标识；测试替身未声明时使用 unknown（仅影响缓存命中）。"""
+    return str(getattr(service, "backend", None) or "unknown")
+
+
 def _load_vector_rows(
     db: Session, source: str, repo_ids: Sequence[str]
 ) -> dict[str, RepoVector]:
@@ -100,7 +110,7 @@ def _load_stored_vectors(
     """读取与当前模型 / 后端兼容的已持久化向量。"""
     vectors: dict[str, list[float]] = {}
     for repo_id, row in _load_vector_rows(db, source, repo_ids).items():
-        if row.model != service.model_name or row.backend != service.backend:
+        if row.model != _service_model_name(service) or row.backend != _service_backend(service):
             continue
         vector = _parse_vector(row.vector)
         if vector:
@@ -163,16 +173,16 @@ def ensure_repo_vectors(
                 RepoVector(
                     source=source,
                     repo_id=row.id,
-                    model=service.model_name,
-                    backend=service.backend,
+                    model=_service_model_name(service),
+                    backend=_service_backend(service),
                     dim=len(vector),
                     text_hash=digest,
                     vector=payload,
                 )
             )
         else:
-            previous.model = service.model_name
-            previous.backend = service.backend
+            previous.model = _service_model_name(service)
+            previous.backend = _service_backend(service)
             previous.dim = len(vector)
             previous.text_hash = digest
             previous.vector = payload
@@ -518,6 +528,11 @@ def generate_daily_recommendations(
         "selected": sum(int(item.get("selected", 0)) for item in results),
         "minScore": round(max(0.0, min(1.0, effective_min_score)), 4),
         "topK": effective_top_k,
+        "feedbackExcluded": {
+            str(item.get("userId")): int(item.get("feedbackExcluded", 0))
+            for item in results
+            if item.get("userId")
+        },
         "results": results,
     }
     logger.info(
