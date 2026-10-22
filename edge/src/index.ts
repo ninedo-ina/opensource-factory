@@ -56,6 +56,9 @@ import { recordSecurityEvent } from './security/login-guard.ts';
 import { normalizeRoute, recordRequestMetric, shouldRecordMetric } from './monitoring/metrics';
 import licensesRoutes from './routes/licenses';
 import internalLicensesRoutes from './routes/internal-licenses';
+import apiTokenRoutes from './routes/api-tokens';
+import v1Routes from './routes/v1';
+import { resolveApiTokenAuth } from './api-tokens/auth';
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -88,6 +91,7 @@ let securityRequestCounter = 0;
 app.use('/api/*', async (c, next) => {
   const user = await getSessionUser(c);
   c.set('user', user);
+  c.set('apiToken', null);
 
   const policy = policyFor(c.req.method, new URL(c.req.url).pathname, c.env);
   if (!policy) {
@@ -165,6 +169,18 @@ app.use('/api/*', async (c, next) => {
   }
 });
 
+// 开放 API 令牌解析（M8-05）：仅 /api/v1/*，无会话时用 Bearer 令牌
+app.use('/api/v1/*', async (c, next) => {
+  if (!c.get('user')) {
+    const auth = await resolveApiTokenAuth(c);
+    if (auth) {
+      c.set('user', auth.user);
+      c.set('apiToken', auth.token);
+    }
+  }
+  await next();
+});
+
 // 业务路由
 app.route('/api/auth', authRoutes);
 app.route('/api/repos', reposRoutes);
@@ -200,6 +216,8 @@ app.route('/api/reports', reportsRoutes);
 app.route('/api/internal/reports', internalReports);
 app.route('/api/repo-updates', repoUpdatesRoutes);
 app.route('/api/internal/repo-updates', internalRepoUpdates);
+app.route('/api/tokens', apiTokenRoutes);
+app.route('/api/v1', v1Routes);
 
 // 404
 app.notFound((c) =>

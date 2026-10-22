@@ -372,3 +372,20 @@ CREATE INDEX IF NOT EXISTS idx_repo_updates_user_status_detected
     ON repo_updates (user_id, status, detected_at DESC);
 CREATE INDEX IF NOT EXISTS idx_repo_updates_user_type_detected
     ON repo_updates (user_id, type, detected_at DESC);
+
+-- ── 个人开放 API 令牌（M8-05 / M8-06，迁移 0021）────────────────
+CREATE TABLE IF NOT EXISTS api_tokens (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    label TEXT NOT NULL DEFAULT 'CLI 令牌',
+    token_hash TEXT NOT NULL UNIQUE,
+    hint TEXT NOT NULL,
+    scopes TEXT NOT NULL DEFAULT 'read write',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_used_at TEXT,
+    revoked_at TEXT,
+    expires_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_tokens_user
+    ON api_tokens (user_id, created_at DESC);

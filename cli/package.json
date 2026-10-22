@@ -1,0 +1,22 @@
+{
+  "name": "openfactory-cli",
+  "version": "0.1.0",
+  "description": "OpenFactory 命令行工具：查询收藏、搜索仓库、查看热榜与推荐",
+  "type": "module",
+  "bin": {
+    "of": "bin/of.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "license": "MIT",
+  "private": true
+}

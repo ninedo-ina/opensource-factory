@@ -609,6 +609,28 @@ VPS 本地 SQLite 表（M2-04），不复制到 D1；用于留存样本、人工
 `my_repositories` 同步保存 `latest_release_tag` / `latest_release_name` / `latest_release_url` /
 `latest_release_at` / `latest_release_checked_at` 作为增量扫描基线（首次扫描只记基线，不提醒历史版本）。
 
+### 3.25 `api_tokens` 个人开放 API 令牌（D1，迁移 `0021`）
+
+> M8-05 / M8-06：CLI 与脚本使用 `Authorization: Bearer ofp_…` 访问 `/api/v1/*`；
+> 令牌只保存 SHA-256 摘要，明文仅在创建响应返回一次。
+
+| 字段 | 说明 |
+| --- | --- |
+| id TEXT PK | `tok_` + 16 位十六进制 |
+| user_id TEXT | 用户 id（所有查询按此隔离） |
+| label TEXT | 用户可读名称，默认「CLI 令牌」，最长 60 字 |
+| token_hash TEXT UNIQUE | `sha256(明文)`，用于鉴权查询 |
+| hint TEXT | 脱敏提示，如 `ofp_ab12…cd34` |
+| scopes TEXT | 空格分隔的 `read` / `write`，默认两者 |
+| created_at DATETIME | 创建时间 |
+| last_used_at DATETIME | 最近使用时间（按分钟节流写回） |
+| revoked_at DATETIME | 撤销时间；非空即失效 |
+| expires_at DATETIME | 可选过期时间（当前创建接口不设置） |
+
+索引 `(user_id, created_at DESC)` 支撑设置页列表；`token_hash` 唯一索引支撑鉴权。
+管理接口 `/api/tokens` 仅接受会话 Cookie，Bearer 令牌不能管理令牌，避免令牌被用来扩权。
+单个用户最多保留 20 个有效令牌。
+
 ## 4. 索引策略
 
 | 表 | 索引 | 用途 |
@@ -617,6 +639,7 @@ VPS 本地 SQLite 表（M2-04），不复制到 D1；用于留存样本、人工
 | trending_repositories | `(stars_today DESC)`、`(crawled_at)` | 榜单查询 |
 | trending_snapshots | `(snapshot_date, rank)`、`(snapshot_date, language)` | 按日榜单、日期/语言筛选 |
 | sessions | `(user_id)`、`(expires_at)` | 会话校验与清理 |
+| api_tokens | `(user_id, created_at DESC)`、`token_hash` UNIQUE | 设置页列表、Bearer 鉴权 |
 | repo_tags | `(repo_id)`、`(tag_id)` | 反查 |
 | summary_quality_samples | `(batch_id)`、唯一 `(batch_id, repo_source, repo_id)` | 抽检批次查询与去重 |
 | recommendations | `(user_id, score DESC)`、`(evaluation_run_id)` | 推荐列表 / 评估批次查询 |

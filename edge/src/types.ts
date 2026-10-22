@@ -3,6 +3,7 @@
  * 前端管理后台依赖的 JSON 形状见各实体接口。
  */
 import type { LicenseInfo } from './license/compliance';
+import type { ApiTokenRow } from './api-tokens/helpers';
 
 /** Worker 运行时绑定（wrangler.toml vars + secrets） */
 export interface Env {
@@ -749,4 +750,6 @@ export interface CuratedReport extends ReportSummary {
 /** Hono 上下文变量（挂载当前用户） */
 export interface Variables {
   user: UserRow | null;
+  /** 当前请求使用的个人 API 令牌；会话登录时为 null（M8-05） */
+  apiToken: ApiTokenRow | null;
 }

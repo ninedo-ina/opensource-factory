@@ -43,6 +43,7 @@ opensource-factory/
 ├── admin/     # 前端控制台（基于 shadcn-admin 模板定制）
 ├── edge/      # Cloudflare Workers API（Hono + D1 + Vectorize）
 ├── vps/       # 本地算力节点（FastAPI + Celery + Ollama/BGE-M3）
+├── cli/       # 命令行工具（零依赖 Node.js，`of` 命令）
 ├── docs/      # 全部项目文档与数据资产（规范 / 规划 / 需求 / 架构）
 └── .github/   # CI 工作流
 ```
@@ -78,6 +79,18 @@ pip install -r requirements.txt          # 轻量依赖；完整推理见 requir
 uvicorn app.main:app --reload            # http://localhost:8000
 celery -A app.tasks.celery_app worker -l info   # 任务队列
 ```
+
+### 命令行工具（cli）
+
+```bash
+cd cli
+npm link                  # 安装 `of` 命令（Node.js ≥ 18）
+of config set url http://localhost:8787
+of login --token ofp_…    # 令牌在后台「设置 → 开放 API」创建
+of list
+```
+
+详见 [CLI 使用手册](./docs/guides/cli.md)。
 
 ## 📚 文档
 

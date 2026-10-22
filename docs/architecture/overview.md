@@ -667,6 +667,21 @@ admin /star-trends → GET /api/star-trends?days=30&scope=trending|my&language=�
 `scope=my` 返回 `portfolioRepos` / `coverage`，明确只统计收藏仓库中上过热榜的项目。
 只读聚合，不新增表 / 迁移，也不依赖 VPS。
 
+### 3.34 开放 API 与 CLI（M8-05 / M8-06）
+
+```
+admin「设置 → 开放 API」→ POST /api/tokens（会话 Cookie）
+→ edge 生成 ofp_ + 48 hex 明文，sha256 存 api_tokens，明文仅响应一次
+→ 用户复制到 CLI：of login --token ofp_…
+CLI / 脚本 → Authorization: Bearer ofp_… → GET/POST /api/v1/*
+→ edge resolveApiTokenAuth：sha256 查 api_tokens → 校验 revoked / expires
+→ 按 scope（read / write）放行；last_used_at 按分钟节流回写
+```
+
+管理接口只接受会话：Bearer 令牌不能创建 / 撤销令牌，避免泄露的令牌被用来扩权。
+`/api/v1` 同时兼容浏览器会话，便于后台联调；会话登录默认拥有全部 scope。
+CLI 零依赖（Node.js ≥ 18），本地配置权限 0600，支持 `--json` 输出。
+
 ## 4. 接口边界
 
 ### 4.1 admin ↔ edge（JSON over HTTPS，Cookie 会话）
@@ -677,6 +692,9 @@ admin /star-trends → GET /api/star-trends?days=30&scope=trending|my&language=�
 | `/api/auth/github/callback` | GET | OAuth 回调（code → 会话） |
 | `/api/auth/me` | GET | 当前用户（未登录 401） |
 | `/api/auth/logout` | POST | 退出（204） |
+| `/api/tokens` | GET | 个人令牌列表（含已撤销；仅会话，Bearer 返回 401） |
+| `/api/tokens` | POST | 创建令牌（`{label, scopes}`；明文仅返回一次，最多 20 个有效） |
+| `/api/tokens/:id` | DELETE | 撤销令牌（幂等失败返回 404） |
 | `/api/repos` | GET | 仓库列表（`?q=` / `?categoryId=`，含 `summary` / `health`） |
 | `/api/repos/health` | GET | 当前用户仓库健康度列表与汇总（`?status=active\|attention\|stale\|archived\|unknown`） |
 | `/api/repos/health/refresh` | POST | 触发 VPS 刷新健康度（202；VPS 未配置时返回 accepted 提示） |
@@ -743,6 +761,22 @@ admin /star-trends → GET /api/star-trends?days=30&scope=trending|my&language=�
 | `/api/reports/:id` | GET | 报告详情（统计 + 分节 + Markdown；仅本人可见） |
 | `/api/reports/:id/markdown` | GET | 下载报告 Markdown（`text/markdown` 附件） |
 | `/api/reports/generate` | POST | 立即生成当前周期报告（`kind=weekly\|monthly`） |
+
+### 4.1.1 开放 API v1（`Authorization: Bearer ofp_…` 或会话）
+
+| 端点 | 方法 | scope | 说明 |
+| --- | --- | --- | --- |
+| `/api/v1/me` | GET | read | 当前用户 + 令牌 DTO（hint / scopes / 时间） |
+| `/api/v1/repos` | GET | read | 收藏列表（`q` / `language` / `category` / `tag` / `limit` / `offset`） |
+| `/api/v1/repos/:owner/:name` | GET | read | 收藏详情（404 表示未收藏） |
+| `/api/v1/repos` | POST | write | 收藏仓库（`{repo, stars?, language?, description?}`；幂等，跨用户 409） |
+| `/api/v1/repos/:owner/:name` | DELETE | write | 取消收藏 |
+| `/api/v1/search` | GET | read | 收藏内搜索（`q` 必填，`limit` 默认 20） |
+| `/api/v1/trending` | GET | read | 今日热榜（优先最新快照；`language` / `limit`） |
+| `/api/v1/recommendations` | GET | read | 推荐列表（`status` / `limit`） |
+
+统一错误：`401 unauthorized`（未登录 / 令牌无效）、`403 insufficient_scope`、
+`400 invalid_repo|invalid_body|invalid_query`、`404 not_found`、`409 repo_owned_by_other_user`。
 
 ### 4.2 edge ↔ vps（内部 API，`X-Internal-Token`）
 

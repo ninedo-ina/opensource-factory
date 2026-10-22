@@ -55,6 +55,20 @@ jobs:
       - name: Test (internal vector routes)
         run: npm run test:vectorize
 
+  cli:
+    name: cli · test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cli
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Test (node:test, zero dependencies)
+        run: npm test
+
   vps:
     name: vps · pytest
     runs-on: ubuntu-latest

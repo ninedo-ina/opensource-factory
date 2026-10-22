@@ -97,6 +97,8 @@
 | IT-0061 | M7-08 | 个人数据微调评估（LoRA 可行性；预算与效果双评估） | M7-06 | ⏳ 待排期（平台 pending） |
 | IT-0062 | M7-09 | Agent 工作流（自动整理 / 草稿生成） | M7-01~03 | ⏳ 待排期（平台 pending） |
 | IT-0063 | M7-10 | M7 验收与回顾（集成 M7-01~07 + 跨分支验收脚本 + 缺口登记） | IT-0054~0062 | ✅ 已完成（2026-10-22） |
+| IT-0064 | M8-05 | 开放 API（个人令牌：`api_tokens` / `/api/tokens` / `/api/v1` Bearer + scope） | M5-05 | ✅ 已完成（2026-10-22） |
+| IT-0065 | M8-06 | CLI 工具（零依赖 `of`：登录 / 查询 / 搜索 / 收藏 / 热榜 / 推荐 + admin 令牌管理页） | IT-0064 | ✅ 已完成（2026-10-22） |
 
 > 说明：IT-0004 / IT-0005 在人工资源（Cloudflare 账号、OAuth App）就绪前，可先以 `wrangler --local` + 本地回调完成开发与验证；其余按需求池顺序滚动排期。
 
@@ -151,3 +153,5 @@
 | 2026-10-22 | 交付 | IT-0059 / M7-06 模型路由（REQ-202610-0965）：VPS `model_route_configs` + 四策略路由 / 升级建议 / 健康检查接口，摘要与向量化接入路由决策；edge 登录态代理；admin `/model-routing` 页面；计划见 `planning/plan-req-202610-0965-model-routing.md` |
 | 2026-10-22 | 交付 | IT-0060 / M7-07 完成（REQ-202610-0966）：Rerank 精排（相关性 / 画像亲和 / 时效 / 动量 / 人气 / 健康度六路信号 + MMR 多样性），每日生成自动接入并落库精排明细；VPS 预览 / 应用 API、edge 代理与本地降级、admin「精排工作台」；计划见 `planning/plan-req-202610-0966-rerank.md` |
 | 2026-10-22 | 验收 | IT-0063 / M7-10 完成（REQ-202610-0969）：集成 M7-01~07 七个分支，M7 验收 14/14 PASS、2 项平台 pending 缺口登记；三端检查全绿（vps 532 / edge 180 / admin 224）；报告见 `planning/acceptance-m7.md` / `acceptance-m7-report.md` |
+| 2026-10-22 | 交付 | IT-0064 / M8-05 开放 API 个人令牌（REQ-202610-0975 依赖基线）：D1 `api_tokens`（migration 0021）、`/api/tokens` 会话管理、`/api/v1/*` Bearer + read/write scope、`last_used_at` 分钟节流；计划见 `planning/plan-req-202610-0975-cli-tool.md` |
+| 2026-10-22 | 交付 | IT-0065 / M8-06 CLI 工具（REQ-202610-0975）：零依赖 `cli/`（`of` 登录 / whoami / list / search / show / add / remove / trending / recommend / config，`--json` 输出）、admin「设置 → 开放 API」令牌管理页、`docs/guides/cli.md` |

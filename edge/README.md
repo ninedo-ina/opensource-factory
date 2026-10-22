@@ -216,6 +216,25 @@ npm run test:m2 -- --strict \
 
 `AuthUser`：`{id, login, name, email, avatarUrl}`
 
+### 开放 API 与个人令牌（M8-05 / M8-06）
+
+| 方法/路径 | 说明 |
+| --- | --- |
+| `GET /api/tokens` | 当前用户令牌列表（仅会话 Cookie；Bearer 调用返回 401） |
+| `POST /api/tokens` | 创建令牌 `{label?, scopes?: ['read','write']}`，返回 `{token, item}`；明文只返回一次，最多 20 个有效 |
+| `DELETE /api/tokens/:id` | 撤销令牌 |
+| `GET /api/v1/me` | 当前用户 + 令牌 DTO（Bearer 或会话） |
+| `GET /api/v1/repos` | 收藏列表（`q` / `language` / `category` / `tag` / `limit` / `offset`） |
+| `GET /api/v1/repos/:owner/:name` | 收藏详情 |
+| `POST /api/v1/repos` | 收藏仓库（`write`；`{repo, stars?, language?, description?}`，幂等，跨用户 409） |
+| `DELETE /api/v1/repos/:owner/:name` | 取消收藏（`write`） |
+| `GET /api/v1/search?q=` | 收藏内搜索 |
+| `GET /api/v1/trending` | 今日热榜（优先最新快照） |
+| `GET /api/v1/recommendations` | 推荐列表（`status` / `limit`） |
+
+鉴权：`Authorization: Bearer ofp_…`；scope 不足返回 `403 insufficient_scope`。
+令牌只保存 SHA-256 摘要，明文仅在创建时返回。表结构见 `migrations/0021_api_tokens.sql`。
+
 ### 数据接口
 
 | 方法/路径 | 返回 |
