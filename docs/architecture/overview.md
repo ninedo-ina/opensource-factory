@@ -273,6 +273,7 @@ GitHub OAuth callback → login_attempts / security_events
 | `/api/sync` | POST | 触发同步任务（202） |
 | `/api/search/semantic` | POST | 语义搜索（`query` / `topK` / `scope`；vectorize → local → keyword 三级降级） |
 | `/api/search/fulltext` | POST | README 全文检索（`query` / `topK` / `scope` / `offset`；VPS FTS → D1 关键词回退） |
+| `/api/search/suggestions` | GET | 搜索建议（`q` / `limit`；我的仓库 + 热榜 + 标签，登录态，按 `user_id` 隔离） |
 
 ### 4.2 edge ↔ vps（内部 API，`X-Internal-Token`）
 

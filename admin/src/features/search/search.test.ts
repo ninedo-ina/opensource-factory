@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { demoSearchSuggestions } from './api'
 import {
   engineLabel,
   formatScore,
@@ -54,7 +55,47 @@ describe('搜索工具函数', () => {
       maxTerms: 12,
     }
     expect(understandingLabels(understanding)).toEqual(['Kubernetes', '部署'])
-    expect(understandingLabels({ ...understanding, expanded: false })).toEqual([])
+    expect(understandingLabels({ ...understanding, expanded: false })).toEqual(
+      []
+    )
     expect(understandingLabels(undefined)).toEqual([])
+  })
+})
+
+describe('演示搜索建议', () => {
+  it('空查询时标签在前，并包含仓库与标签两类', () => {
+    const items = demoSearchSuggestions('', 8)
+    expect(items).toHaveLength(8)
+    expect(items[0].type).toBe('tag')
+    expect(items.some((item) => item.type === 'repo')).toBe(true)
+    expect(items.some((item) => item.type === 'tag')).toBe(true)
+  })
+
+  it('按标签或简介做忽略大小写的包含匹配', () => {
+    const byLabel = demoSearchSuggestions('typescript')
+    expect(byLabel.some((item) => item.label === 'TypeScript')).toBe(true)
+
+    const byDescription = demoSearchSuggestions('多租户')
+    expect(byDescription.length).toBeGreaterThan(0)
+    expect(byDescription.every((item) => item.type === 'repo')).toBe(true)
+    expect(
+      byDescription.every((item) => item.description.includes('多租户'))
+    ).toBe(true)
+  })
+
+  it('条数限制夹取在 0~10，仓库建议字段完整', () => {
+    expect(demoSearchSuggestions('', 0)).toEqual([])
+    expect(demoSearchSuggestions('', 99)).toHaveLength(9)
+    const repo = demoSearchSuggestions('', 10).find(
+      (item) => item.type === 'repo'
+    )
+    expect(repo).toMatchObject({
+      type: 'repo',
+      value: repo?.label,
+      source: 'trending',
+      language: 'TypeScript',
+    })
+    expect(repo?.stars).toBeGreaterThan(0)
+    expect(repo?.url).toContain('github.com')
   })
 })

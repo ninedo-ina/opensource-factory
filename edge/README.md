@@ -49,6 +49,7 @@ edge/
         ├── dashboard.ts  # /api/dashboard/stats
         ├── sync.ts       # /api/sync
         ├── search.ts     # /api/search/semantic（语义三级降级）· /api/search/fulltext（README FTS）
+        ├── search-suggestions.ts # /api/search/suggestions（仓库 / 标签建议）
         └── internal-vectors.ts # /api/internal/vectors/*（VPS → Vectorize，X-Internal-Token）
 ```
 
@@ -181,6 +182,7 @@ npm run test:m2 -- --strict \
 | `POST /api/sync` | 202 `{"status":"queued"}`（已配置 VPS）或 `{"status":"accepted","note":"vps node not configured"}` |
 | `POST /api/search/semantic` | `SearchResponse`：body `{query, topK?, scope?}`；mode 为 `vectorize` / `local` / `keyword`；`my` 结果仅当前用户；响应可带 `understanding`（查询理解结果），关键词兜底用其扩展词做多词 OR LIKE |
 | `POST /api/search/fulltext` | `SearchResponse`：body `{query, topK?, scope?, offset?}`；mode 为 `fts` / `like`（VPS FTS5，短词 LIKE 回退）/ `keyword`（VPS 不可用降级）；`my` 结果按 D1 `user_id` 过滤；条目可带 `snippet` / `matchedTerms`（M6-01） |
+| `GET /api/search/suggestions` | `SearchSuggestionResponse`：query `q` / `limit`（默认 8，上限 10）；返回仓库 / 标签建议，空查询给热门标签与高星仓库；需登录，`my` 仓库与标签按 `user_id` 隔离（M6-10） |
 | `GET /healthz` | `{"status":"ok"}` |
 
 JSON 形状（前端契约，勿改字段名）：
