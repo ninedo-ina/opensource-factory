@@ -51,7 +51,8 @@ edge/
 │   ├── 0020_rerank.sql  # 精排分 / 名次 / 明细字段（M7-07）
 │   ├── 0021_telegram_bot.sql  # Telegram 会话绑定 + 一次性绑定码（M8-03）
 │   ├── 0022_extension_tokens.sql  # 浏览器扩展令牌（M8-02；由 0016 顺延避免重号）
-│   └── 0023_data_import.sql  # 外部收藏导入记录（M9-03；由 0022 顺延避免重号）
+│   ├── 0023_data_import.sql  # 外部收藏导入记录（M9-03；由 0022 顺延避免重号）
+│   └── 0024_data_quality.sql  # 数据质量扫描 / 问题台账（M9-05；由 0023 顺延避免重号）
 └── src/
     ├── index.ts          # Hono 入口：CORS、日志、/healthz、路由挂载、Cron scheduled handler
     ├── types.ts          # Env 绑定 + 数据库行 + API 响应实体
@@ -65,6 +66,8 @@ edge/
     │   └── helpers.ts    # 相似推荐参数归一化 + 关键词兜底打分（纯函数）
     ├── duplicates/
     │   └── helpers.ts    # 重复检测：地址 / 名称归一化、本地聚类、合并建议（纯函数）
+    ├── data-quality/
+    │   └── checks.ts     # 数据质量：元数据检查 / 重复问题 / 链接结果合并 / 质量分（纯函数）
     ├── dependencies/
     │   └── helpers.ts    # 依赖分析参数归一化 + D1 语言概览降级（纯函数）
     ├── category-suggestions/
@@ -101,6 +104,7 @@ edge/
         ├── monitoring.ts # /api/monitoring/*（总览 / 检查 / 告警确认 + /api/internal/analytics）
         ├── similar.ts    # /api/similar（相似项目：VPS 向量近邻 → D1 关键词兜底）
         ├── duplicates.ts # /api/duplicates/*（重复检测：VPS 规则 + 向量 → 本地兜底；按用户忽略）
+        ├── data-quality.ts # /api/data-quality/*（扫描 / 补全 / 忽略 / 恢复 + 内部镜像）
         ├── rerank.ts     # /api/rerank/*（精排预览 / 应用：VPS 六路信号 → 本地 MMR 兜底）
         ├── analysis.ts   # /api/analysis/*（依赖分析：用户仓库 → VPS 聚合 → 本地语言概览）
         ├── category-suggestions.ts # /api/category-suggestions/*（生成 / 列表 / 采纳 / 忽略）
@@ -312,6 +316,11 @@ npm run test:m2 -- --strict \
 | `POST /api/duplicates/dismiss` | 忽略重复簇，body `{clusterId, repoIds?, reason?}`；按 `user_id + cluster_key` 幂等 |
 | `GET /api/duplicates/dismissed` | `{count, items:[{clusterId, repoIds, reason, createdAt}]}`（当前用户） |
 | `DELETE /api/duplicates/dismiss/:clusterId` | 取消忽略，返回 `{removed, clusterId}` |
+| `GET /api/data-quality` | `{summary, issues, latestScan, history}`：query `type` / `severity` / `status` / `limit`；需登录（M9-05） |
+| `POST /api/data-quality/scan` | 执行质量扫描，body `{checkLinks?, maxRepos?}`；mode 为 `local` / `hybrid`，问题幂等 upsert；需登录 |
+| `POST /api/data-quality/fix` | 补全元数据，body `{repoIds?, fields?}`；VPS GitHub 详情 → D1，VPS 不可达用 README 摘要降级 |
+| `POST /api/data-quality/issues/ignore` / `restore` | 批量忽略 / 恢复问题，body `{issueIds[]}` |
+| `GET /api/internal/data-quality/mirror` | D1 仓库镜像快照（`X-Internal-Token`），供 VPS `python -m app.data_quality reconcile` 对账 |
 | `GET /api/analysis/dependencies` | 依赖分析：query `top`；按当前用户仓库 id 调 VPS 聚合，mode 为 `vps` / `local`（D1 语言概览降级）；需登录 |
 | `POST /api/analysis/dependencies/refresh` | 扫描当前用户仓库依赖清单；VPS 不可达返回 `{status:"unavailable"}`，需登录 |
 | `GET /api/category-suggestions` | `{items,summary,categories}`：query `status=pending\|accepted\|dismissed\|all` / `repoId` / `limit` / `offset`；需登录 |

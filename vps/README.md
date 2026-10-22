@@ -59,6 +59,7 @@ vps/
 │   │   ├── fulltext.py           # README 全文镜像 + FTS5 trigram 检索（短词 LIKE 回退）
 │   │   ├── similar_recommendations.py # 相似项目：种子向量近邻 + 水合（M6-02）
 │   │   ├── duplicates.py         # 重复检测：地址 / 名称 / 简介 / 向量复核 + 聚类 + 合并建议（M6-03）
+│   │   ├── data_quality.py       # 数据质量：链接检测 / GitHub 元数据 patch / D1 镜像对账（M9-05 / M1-16）
 │   │   ├── repo_health.py        # 项目健康度：分档 / 理由 / 汇总 / 回写 edge（M6-05）
 │   │   ├── license.py            # License 识别 / 目录 / 合规分级（M6-06）
 │   │   ├── dependency_analysis.py # 依赖清单解析 / 扫描入库 / 技术栈关联聚合（M6-07）
@@ -75,6 +76,7 @@ vps/
 │   │   ├── vectors.py            # GET /api/vectors/stats、runs、单条向量
 │   │   ├── search.py             # /api/search/*（understand / embed / query / semantic / fulltext / similar / status）
 │   │   ├── duplicates.py         # POST /api/duplicates/scan（重复检测，只读）
+│   │   ├── data_quality.py       # POST /api/data-quality/check-links、/metadata（数据质量，内部）
 │   │   ├── licenses.py           # /api/licenses/*（目录 / 分布统计，M6-06）
 │   │   ├── analysis.py           # /api/analysis/*（依赖分析聚合 / 清单扫描）
 │   │   ├── category_suggestions.py # POST /api/category-suggestions/generate（分类建议，无状态）
@@ -479,6 +481,8 @@ Celery beat 每日 04:37 自动增量同步、05:17 自动对账；06:12 自动�
 | POST | `/api/search/fulltext/rebuild` | 全量重建 FTS 索引 | `200 {rebuilt}` |
 | POST | `/api/search/similar` | 相似项目向量近邻（未水合） | `200 {source,repoId,scope,count,topK,minScore,excludeSaved,model,backend,dim,scanned,seed,items:[{source,repoId,score}]}` |
 | POST | `/api/duplicates/scan` | 重复 / 相似项目检测（`scope` / `myRepoIds` / `maxRepos` / `maxClusters`；只读） | `200 {scanId,scope,scanned,compared,clusters,tookMs,thresholds}` |
+| POST | `/api/data-quality/check-links` | 批量链接检测（`items[{repoId,url,platform}]`，HEAD / GET，最多 50） | `200 {results:[{repoId,status,httpStatus,finalUrl,error}]}` |
+| POST | `/api/data-quality/metadata` | 生成元数据补全 patch（`repoIds[]` ≤50，GitHub 详情） | `200 {items:[{repoId,patch}]}` |
 | POST | `/api/category-suggestions/generate` | 自动分类建议（`repos[]` 内联快照 / `perRepo` / `minScore`；18 条业务线规则，无状态） | `200 {generatedAt,scanned,suggested,skipped,items:[{repoId,suggestions:[...]}]}` |
 | GET | `/api/search/status` | 向量覆盖率、模型分布、最近运行与词表规模 | `200 {...}` |
 | GET | `/api/analysis/dependencies?repoIds=&top=20` | 依赖分析聚合（技术栈 / 生态 / 依赖覆盖 / 依赖 × 语言关联） | `200 {...}` |

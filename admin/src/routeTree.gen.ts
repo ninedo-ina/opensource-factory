@@ -21,6 +21,7 @@ import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authen
 import { Route as AuthenticatedAssetReportIndexRouteImport } from './routes/_authenticated/asset-report/index'
 import { Route as AuthenticatedCategoriesIndexRouteImport } from './routes/_authenticated/categories/index'
 import { Route as AuthenticatedCategorySuggestionsIndexRouteImport } from './routes/_authenticated/category-suggestions/index'
+import { Route as AuthenticatedDataQualityIndexRouteImport } from './routes/_authenticated/data-quality/index'
 import { Route as AuthenticatedDependenciesIndexRouteImport } from './routes/_authenticated/dependencies/index'
 import { Route as AuthenticatedDuplicatesIndexRouteImport } from './routes/_authenticated/duplicates/index'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
@@ -110,6 +111,12 @@ const AuthenticatedCategorySuggestionsIndexRoute =
   AuthenticatedCategorySuggestionsIndexRouteImport.update({
     id: '/category-suggestions/',
     path: '/category-suggestions/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDataQualityIndexRoute =
+  AuthenticatedDataQualityIndexRouteImport.update({
+    id: '/data-quality/',
+    path: '/data-quality/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDependenciesIndexRoute =
@@ -292,6 +299,7 @@ export interface FileRoutesByFullPath {
   '/asset-report/': typeof AuthenticatedAssetReportIndexRoute
   '/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/category-suggestions/': typeof AuthenticatedCategorySuggestionsIndexRoute
+  '/data-quality/': typeof AuthenticatedDataQualityIndexRoute
   '/dependencies/': typeof AuthenticatedDependenciesIndexRoute
   '/duplicates/': typeof AuthenticatedDuplicatesIndexRoute
   '/export/': typeof AuthenticatedExportIndexRoute
@@ -331,6 +339,7 @@ export interface FileRoutesByTo {
   '/asset-report': typeof AuthenticatedAssetReportIndexRoute
   '/categories': typeof AuthenticatedCategoriesIndexRoute
   '/category-suggestions': typeof AuthenticatedCategorySuggestionsIndexRoute
+  '/data-quality': typeof AuthenticatedDataQualityIndexRoute
   '/dependencies': typeof AuthenticatedDependenciesIndexRoute
   '/duplicates': typeof AuthenticatedDuplicatesIndexRoute
   '/export': typeof AuthenticatedExportIndexRoute
@@ -373,6 +382,7 @@ export interface FileRoutesById {
   '/_authenticated/asset-report/': typeof AuthenticatedAssetReportIndexRoute
   '/_authenticated/categories/': typeof AuthenticatedCategoriesIndexRoute
   '/_authenticated/category-suggestions/': typeof AuthenticatedCategorySuggestionsIndexRoute
+  '/_authenticated/data-quality/': typeof AuthenticatedDataQualityIndexRoute
   '/_authenticated/dependencies/': typeof AuthenticatedDependenciesIndexRoute
   '/_authenticated/duplicates/': typeof AuthenticatedDuplicatesIndexRoute
   '/_authenticated/export/': typeof AuthenticatedExportIndexRoute
@@ -415,6 +425,7 @@ export interface FileRouteTypes {
     | '/asset-report/'
     | '/categories/'
     | '/category-suggestions/'
+    | '/data-quality/'
     | '/dependencies/'
     | '/duplicates/'
     | '/export/'
@@ -454,6 +465,7 @@ export interface FileRouteTypes {
     | '/asset-report'
     | '/categories'
     | '/category-suggestions'
+    | '/data-quality'
     | '/dependencies'
     | '/duplicates'
     | '/export'
@@ -495,6 +507,7 @@ export interface FileRouteTypes {
     | '/_authenticated/asset-report/'
     | '/_authenticated/categories/'
     | '/_authenticated/category-suggestions/'
+    | '/_authenticated/data-quality/'
     | '/_authenticated/dependencies/'
     | '/_authenticated/duplicates/'
     | '/_authenticated/export/'
@@ -612,6 +625,13 @@ declare module '@tanstack/react-router' {
       path: '/category-suggestions'
       fullPath: '/category-suggestions/'
       preLoaderRoute: typeof AuthenticatedCategorySuggestionsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/data-quality/': {
+      id: '/_authenticated/data-quality/'
+      path: '/data-quality'
+      fullPath: '/data-quality/'
+      preLoaderRoute: typeof AuthenticatedDataQualityIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dependencies/': {
@@ -838,6 +858,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAssetReportIndexRoute: typeof AuthenticatedAssetReportIndexRoute
   AuthenticatedCategoriesIndexRoute: typeof AuthenticatedCategoriesIndexRoute
   AuthenticatedCategorySuggestionsIndexRoute: typeof AuthenticatedCategorySuggestionsIndexRoute
+  AuthenticatedDataQualityIndexRoute: typeof AuthenticatedDataQualityIndexRoute
   AuthenticatedDependenciesIndexRoute: typeof AuthenticatedDependenciesIndexRoute
   AuthenticatedDuplicatesIndexRoute: typeof AuthenticatedDuplicatesIndexRoute
   AuthenticatedExportIndexRoute: typeof AuthenticatedExportIndexRoute
@@ -868,6 +889,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCategoriesIndexRoute: AuthenticatedCategoriesIndexRoute,
   AuthenticatedCategorySuggestionsIndexRoute:
     AuthenticatedCategorySuggestionsIndexRoute,
+  AuthenticatedDataQualityIndexRoute: AuthenticatedDataQualityIndexRoute,
   AuthenticatedDependenciesIndexRoute: AuthenticatedDependenciesIndexRoute,
   AuthenticatedDuplicatesIndexRoute: AuthenticatedDuplicatesIndexRoute,
   AuthenticatedExportIndexRoute: AuthenticatedExportIndexRoute,

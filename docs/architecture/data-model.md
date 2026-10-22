@@ -23,6 +23,7 @@ recommendations              （user_id 可空 = 全局推荐）
   ▼
 notifications                （站内通知，按用户隔离）
 duplicate_dismissals         （重复检测：按用户忽略的簇）
+data_quality_scans / issues  （数据质量扫描与问题台账，按用户隔离）
 category_suggestions         （自动分类建议：按用户 / 仓库 / 分类唯一）
 ```
 
@@ -657,7 +658,7 @@ VPS 本地 SQLite 表（M2-04），不复制到 D1；用于留存样本、人工
 唯一索引 `telegram_links(user_id)` 保证一个用户只绑定一个会话；`telegram_link_codes(user_id, expires_at DESC)`
 便于生成新码时回收旧码。绑定码一次性使用，绑定成功 / 过期后删除；仅支持私聊，群组 / 频道的隐私问题见 open-questions Q35。
 
-### 3.26 `import_runs` 外部收藏导入记录（D1，迁移 `0023`）
+### 3.27 `import_runs` 外部收藏导入记录（D1，迁移 `0023`）
 
 > M9-03：每次执行导入写一条计数记录，供 admin「最近导入」展示；不保存文件原文。
 
@@ -680,6 +681,39 @@ VPS 本地 SQLite 表（M2-04），不复制到 D1；用于留存样本、人工
 索引 `(user_id, created_at DESC)` 支撑「最近导入」列表。导入本身直接写
 `my_repositories` / `categories` / `tags` / `repo_tags`，本表只做审计计数；
 `my_repositories` 的全局主键限制与跨用户冲突处理见 open-questions Q36。
+### 3.28 `data_quality_scans` / `data_quality_issues` 数据质量治理（D1，迁移 `0024`）
+
+> M9-05：扫描只读检测收藏库，问题按 `(user_id, repo_id, issue_key)` 幂等 upsert；
+> 未再检出的旧问题自动置 `fixed`，用户忽略的问题不会被后续扫描覆盖。
+
+`data_quality_scans`：
+
+| 字段 | 说明 |
+| --- | --- |
+| id TEXT PK | `dq_` + 12 位随机串 |
+| user_id TEXT | 所属用户 |
+| mode TEXT | `local` / `hybrid`（VPS 链接检测可用时为 hybrid） |
+| scanned / issue_count / critical_count / warning_count / info_count | 扫描仓库数、问题总数与分级计数 |
+| score INTEGER | 质量分 `100 - 8×critical - 4×warning - 1×info`，下限 0 |
+| duplicate_count / broken_link_count / metadata_count | 分类计数 |
+| created_at TEXT | 扫描时间 |
+
+`data_quality_issues`：
+
+| 字段 | 说明 |
+| --- | --- |
+| id TEXT PK | 稳定 id：`user + repo + issue_key` 的 FNV-1a 摘要（`dq_xxxxxxxx`） |
+| user_id / scan_id / repo_id TEXT | 归属用户、最近一次检出的扫描、仓库 id |
+| issue_key TEXT | `missing_metadata:description` / `duplicate:<cluster>:<repo>` / `broken_link:url` 等 |
+| type TEXT | `duplicate` / `broken_link` / `missing_metadata` / `stale_metadata` |
+| severity TEXT | `critical` / `warning` / `info` |
+| field TEXT NULL | `description` / `language` / `license` / `summary` / `category` / `html_url` / `synced_at` |
+| title / detail / suggestion TEXT | 展示文案与修复建议 |
+| status TEXT | `open` / `ignored` / `fixed` |
+| detected_at / resolved_at TEXT | 最近检出 / 关闭时间 |
+
+唯一索引 `(user_id, repo_id, issue_key)` 保证重复扫描幂等；`(user_id, status, severity)` 服务问题列表与汇总，
+`(scan_id)` 用于按扫描批次回溯。D1 为问题台账主数据，VPS 只负责链接检测与 GitHub 元数据 patch。
 
 ## 4. 索引策略
 
@@ -710,6 +744,8 @@ VPS 本地 SQLite 表（M2-04），不复制到 D1；用于留存样本、人工
 | monitoring_alerts | `(dedupe_key)`、`(status)` | 告警去重 / 未关闭列表 |
 | worker_metrics | `(metric_date)`、主键 `(metric_date, route, method, status_class)` | Workers 指标按日聚合与 UPSERT |
 | duplicate_dismissals | `(user_id, cluster_key)` UNIQUE、`(user_id, created_at DESC)` | 重复检测忽略幂等 / 列表 |
+| data_quality_scans | `(user_id, created_at DESC)` | 质量扫描历史 / 最近一次扫描 |
+| data_quality_issues | `(user_id, repo_id, issue_key)` UNIQUE、`(user_id, status, severity)`、`(scan_id)` | 问题台账幂等 upsert / 列表筛选 / 扫描回溯 |
 | repo_dependencies | `(repo_id)`、`(ecosystem)`、`(name)`、`(repo_id, ecosystem)` | 依赖覆盖统计 / 仓库明细 |
 | repo_dependency_scans | `(repo_id)` 主键 | 扫描状态与增量跳过 |
 | tag_suggestions | `(user_id, repo_id, normalized_name)` UNIQUE、`(user_id, status, updated_at DESC)`、`(user_id, repo_id, status)` | 建议幂等 / 列表筛选 |

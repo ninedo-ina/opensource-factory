@@ -1925,3 +1925,52 @@ class ModelRouteHealthOut(BaseModel):
     rules: ModelRouteHealthRulesOut
     budgetMb: int
     checkedAt: str
+
+
+class DataQualityLinkItemIn(BaseModel):
+    """数据质量链接检测项。"""
+
+    repoId: str = Field(min_length=1, max_length=255)
+    url: str = Field(default="", max_length=2048)
+    platform: str = Field(default="github", max_length=32)
+
+
+class DataQualityLinkCheckRequest(BaseModel):
+    """批量链接检测请求（最多 100 条，服务端再截断到 50）。"""
+
+    items: list[DataQualityLinkItemIn] = Field(min_length=1, max_length=100)
+
+
+class DataQualityLinkResultOut(BaseModel):
+    """单条链接检测结果。"""
+
+    repoId: str
+    status: Literal["ok", "broken", "redirected", "unknown"]
+    httpStatus: Optional[int] = None
+    finalUrl: Optional[str] = None
+    error: Optional[str] = None
+
+
+class DataQualityLinkCheckResponse(BaseModel):
+    """批量链接检测响应。"""
+
+    results: list[DataQualityLinkResultOut] = Field(default_factory=list)
+
+
+class DataQualityMetadataRequest(BaseModel):
+    """元数据补全请求。"""
+
+    repoIds: list[str] = Field(min_length=1, max_length=50)
+
+
+class DataQualityMetadataItemOut(BaseModel):
+    """单个仓库的元数据 patch。"""
+
+    repoId: str
+    patch: dict[str, Any] = Field(default_factory=dict)
+
+
+class DataQualityMetadataResponse(BaseModel):
+    """元数据补全响应。"""
+
+    items: list[DataQualityMetadataItemOut] = Field(default_factory=list)

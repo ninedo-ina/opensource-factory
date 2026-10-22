@@ -7,6 +7,7 @@
  *       /api/tech-stack、/api/tech-profile、/api/licenses、/api/internal/licenses、
  *       /api/analysis、/api/export、/api/tag-suggestions、/api/category-suggestions、
  *       /api/reports、/api/asset-report（M9-02 资产报表）、/api/import（M9-03 数据导入）、
+ *       /api/data-quality（M9-05 数据质量治理）、
  *       /api/telegram（M8-03 Bot 查询入口）
  */
 import { Hono } from 'hono';
@@ -63,6 +64,7 @@ import { normalizeRoute, recordRequestMetric, shouldRecordMetric } from './monit
 import licensesRoutes from './routes/licenses';
 import internalLicensesRoutes from './routes/internal-licenses';
 import extensionRoutes from './routes/extension';
+import dataQualityRoutes, { internalDataQuality } from './routes/data-quality';
 
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -214,6 +216,8 @@ app.route('/api/repo-updates', repoUpdatesRoutes);
 app.route('/api/internal/repo-updates', internalRepoUpdates);
 app.route('/api/import', importRoutes);
 app.route('/api/extension', extensionRoutes);
+app.route('/api/data-quality', dataQualityRoutes);
+app.route('/api/internal/data-quality', internalDataQuality);
 
 app.route('/api/telegram', telegramRoutes);
 
