@@ -161,7 +161,7 @@
 | M9-01 | 个人技术画像（语言 / 框架分布、活跃度） | P1 | M1-05 | ✅ 2026-10-22 完成（REQ-202610-0978：edge `GET /api/tech-profile` 只读聚合 + admin `/tech-profile` 画像页） |
 | M9-02 | 资产报表（收录量 / 分类分布 / Star 趋势） | P1 | M9-01 | ✅ 2026-10-22 完成（REQ-202610-0979：`GET /api/asset-report` + admin `/asset-report`；只读聚合，复用 M7-05 Star 快照） |
 | M9-03 | 数据导入（外部收藏迁移） | P2 | M1-05 | ✅ 2026-10-22 完成（REQ-202610-0980：JSON / CSV / 书签 HTML + 预览执行 + 冲突跳过 + `import_runs` 历史 + admin `/import`） |
-| M9-04 | 全量导出与归档（备份格式规范） | P1 | M5-04 | — |
+| M9-04 | 全量导出与归档（备份格式规范） | P1 | M5-04 | ✅ 2026-10-22 完成（REQ-202610-0981：`openfactory.archive.v1` ZIP / JSON + SHA-256，full 11 / knowledge 4 数据集，admin `/archive`） |
 | M9-05 | 数据质量治理（去重 / 失效链接 / 元数据补全） | P1 | M1-16 | — |
 | M9-06 | 数据保留与隐私策略落地 | P1 | M5-08 | — |
 | M9-07 | M9 验收与回顾 | P0 | M9-01~06 | — |

@@ -1,6 +1,6 @@
 # OpenFactory Edge API
 
-「开源项目工厂 / OpenFactory」的边缘 API 层，运行在 **Cloudflare Workers** 上，为管理后台（admin 前端）提供：GitHub OAuth 登录、用户会话、以及仓库 / 趋势 / 推荐 / 分类 / 仪表盘 / 知识库导出等接口。
+「开源项目工厂 / OpenFactory」的边缘 API 层，运行在 **Cloudflare Workers** 上，为管理后台（admin 前端）提供：GitHub OAuth 登录、用户会话、以及仓库 / 趋势 / 推荐 / 分类 / 仪表盘 / 知识库导出 / 全量归档等接口。
 
 ## 定位
 
@@ -95,7 +95,8 @@ edge/
         ├── tech-profile.ts # /api/tech-profile（个人技术画像：语言 / 框架 / 活跃度，只读 D1）
         ├── star-trends.ts # /api/star-trends（trending_snapshots 只读聚合 + 洞察）
         ├── asset-report.ts # /api/asset-report（收录量 / 分类 / 语言 / Star 趋势只读聚合）
-        ├── export.ts     # /api/export/knowledge（Markdown / JSON / Obsidian 知识库导出）
+        ├── export.ts     # /api/export/knowledge（Markdown / JSON / Obsidian 知识库导出）+ /archive 挂载
+        ├── archive.ts    # /api/export/archive（openfactory.archive.v1 全量归档：ZIP / JSON + SHA-256）
         ├── import.ts     # /api/import/*（外部收藏导入：预览 / 执行 / 历史）
         ├── monitoring.ts # /api/monitoring/*（总览 / 检查 / 告警确认 + /api/internal/analytics）
         ├── similar.ts    # /api/similar（相似项目：VPS 向量近邻 → D1 关键词兜底）
@@ -292,6 +293,9 @@ npm run test:m2 -- --strict \
 | `POST /api/import/preview` | 解析导入内容并返回新增 / 更新 / 冲突 / 无效统计与样例（需登录；不写库，≤2 MB / 2000 条） |
 | `POST /api/import/execute` | 执行导入：UPSERT `my_repositories`、创建分类 / 标签并记录 `import_runs`（需登录；冲突跳过） |
 | `GET /api/import/history?limit=10` | 当前用户最近导入记录（需登录；`limit` 1–50） |
+| `GET /api/export/archive/summary` | 全量归档统计（需登录）：`{schema, version, datasets[], totalRecords, estimatedBytes, scopes, formats}` |
+| `GET /api/export/archive/manifest?scope=&format=` | 仅返回 `openfactory.archive.v1` manifest（需登录） |
+| `GET /api/export/archive?scope=full\|knowledge&format=zip\|json` | 生成全量归档附件（需登录；默认 `full` + `zip`，格式见 `docs/guides/full-export-archive.md`） |
 | `GET /api/monitoring/overview?days=7` | 监控总览（需登录）：`{status, generatedAt, edge, workers, workersError, vps, vpsError}`；合并 VPS 实时状态与 Workers 每日聚合，VPS 不可用时降级返回 Workers 部分 |
 | `POST /api/monitoring/check` | 触发 VPS 一次检查（需登录；VPS 未配置返回 503） |
 | `POST /api/monitoring/alerts/:id/ack` | 确认 VPS 告警（需登录） |

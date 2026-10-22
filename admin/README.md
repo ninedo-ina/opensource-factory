@@ -14,6 +14,7 @@
 | `/trending` | 每日热榜 | GitHub Trending 抓取结果；详情页含「看了又看」相似项目推荐（M6-02） |
 | `/export` | 知识库导出 | Markdown / JSON / Obsidian 三种格式，支持摘要开关与分类分组（M6-08） |
 | `/import` | 数据导入 | 外部收藏迁移：JSON / CSV / 书签 HTML，预览后执行，冲突跳过并记录历史（M9-03） |
+| `/archive` | 全量归档 | `openfactory.archive.v1`：完整 / 知识库两种范围、ZIP / JSON 两种格式，含 SHA-256 校验与数据集清单（M9-04） |
 | `/recommend` | 智能推荐 | 语义匹配推荐（含匹配度与理由） |
 | `/rerank` | 精排工作台 | 六路信号精排预览 / 应用、名次变化、信号贡献、MMR 多样性指标（M7-07） |
 | `/notifications` | 通知中心 | 站内通知（全部/未读/已读筛选、标记已读、忽略，侧边栏未读徽标） |

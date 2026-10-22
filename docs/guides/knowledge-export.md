@@ -104,7 +104,9 @@ CORS 已暴露 `Content-Disposition`，前端可读取服务端生成的文件�
 - `categories` 按仓库数降序，「未分类」固定最后；`repoCount` 为该分类下当前用户的仓库数；
 - `tags` 按出现次数降序；`tags[].count` 为去重后的仓库数；
 - 关闭摘要时 `summary` 字段为 `null`（保留字段，便于消费方稳定解析）；
-- 该 schema 同时作为 M9-04「全量导出与归档」的格式基线，后续扩展只加字段、不改语义。
+- 该 schema 同时作为 M9-04「全量导出与归档」的格式基线（`scope=knowledge` 复用同一数据口径），
+  全量归档在此基础上增加 manifest / SHA-256 校验与活动数据集，见
+  [full-export-archive.md](./full-export-archive.md)；后续扩展只加字段、不改语义。
 
 ## 4. Markdown 格式
 
@@ -188,7 +190,8 @@ updated: "2026-10-20"
 - **文件名冲突**：`owner--repo` 已保证同名仓库唯一；极端情况下不同分类的同名文件仍可能覆盖，后续可加短哈希后缀；
 - **摘要缺失**：无摘要仓库只输出简介，页面用 `withSummary` 提示覆盖率；
 - **演示模式**：未配置 `VITE_API_BASE_URL` 时，前端使用内置演示数据在浏览器本地生成同构文件，便于无后端预览；
-- **M9-04**：全量归档落地时复用本格式，并补充校验和、保留策略等备份元数据。
+- **M9-04**：全量归档已落地（`openfactory.archive.v1`），复用本格式的数据口径并补充
+  manifest、SHA-256 校验、隐私排除与恢复说明，见 [full-export-archive.md](./full-export-archive.md)。
 
 ## 7. 相关代码
 

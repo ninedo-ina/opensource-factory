@@ -107,8 +107,8 @@
 | IT-0071 | M8-08 | M8 验收与回顾（集成 M8-01~04 + 跨分支验收脚本 + 缺口登记） | M8-01~07 | ✅ 已完成（2026-10-22） |
 | IT-0072 | M9-01 | 个人技术画像（语言 / 框架分布、活跃度、收藏趋势与确定性洞察） | M1-05 | ✅ 已完成（2026-10-22） |
 | IT-0073 | M9-02 | 资产报表（收录量 / 分类分布 / Star 趋势；edge 只读聚合 + admin `/asset-report`） | M7-05；M9-01（口径独立，先行交付） | ✅ 已完成（2026-10-22） |
-| IT-0065 | M9-03 | 数据导入（外部收藏迁移：JSON / CSV / 书签 HTML，预览后执行 + 冲突跳过 + `import_runs` 历史） | IT-0006（M1-05） | ✅ 已完成（2026-10-22） |
 | IT-0074 | M9-03 | 数据导入（外部收藏迁移：JSON / CSV / 书签 HTML，预览后执行 + 冲突跳过 + `import_runs` 历史） | IT-0006（M1-05） | ✅ 已完成（2026-10-22） |
+| IT-0075 | M9-04 | 全量导出与归档（`openfactory.archive.v1` ZIP / JSON + SHA-256；edge 只读聚合 + admin `/archive`） | M5-04 | ✅ 已完成（2026-10-22） |
 
 > 说明：IT-0004 / IT-0005 在人工资源（Cloudflare 账号、OAuth App）就绪前，可先以 `wrangler --local` + 本地回调完成开发与验证；其余按需求池顺序滚动排期。
 
@@ -168,3 +168,4 @@
 | 2026-10-22 | 交付 | IT-0072 / M9-01 完成（REQ-202610-0978）：新增 edge `GET /api/tech-profile`（my_repositories / categories / repo_tags 只读聚合，复用 M6-04 语言与框架识别）与 admin `/tech-profile` 页面（画像类型、活跃度分、语言 / 框架 / 分类分布、月度收藏趋势、推送分桶、Top 仓库与确定性洞察）；无新表 / 迁移；计划见 `planning/plan-req-202610-0978-tech-profile.md` |
 | 2026-10-22 | 交付 | IT-0073 / M9-02 资产报表（REQ-202610-0979）：新增 edge `GET /api/asset-report`（收录量 / 分类 / 语言 / Star 快照只读聚合，复用 M7-05）与 admin `/asset-report`（KPI、柱线图、分布榜、Star 面积图、Top Movers、分类明细、CSV 导出、6/12/24 月窗口）；计划见 `planning/plan-req-202610-0979-asset-report.md` |
 | 2026-10-22 | 交付 | IT-0074 / M9-03 数据导入（REQ-202610-0980）：edge 新增 `/api/import/preview|execute|history` 与 `import_runs`（migration 0023），支持 `openfactory.knowledge.v1` / `{items}` / 数组、CSV（逗号 / 制表符 / 分号）与 Netscape 书签 HTML（文件夹 → 分类）；预览后执行、文件内去重、他人收藏冲突跳过；admin `/import` 页面含统计 / 样例 / 问题列表 / 历史；计划见 `planning/plan-req-202610-0980-data-import.md`，指南见 `guides/data-import.md` |
+| 2026-10-22 | 交付 | IT-0075 / M9-04 完成（REQ-202610-0981）：`openfactory.archive.v1` 全量归档（ZIP / JSON + SHA-256），edge `/api/export/archive` 只读聚合 11 个数据集（knowledge 范围 4 个），admin `/archive` 范围 / 格式选择与下载；计划见 `planning/plan-req-202610-0981-full-export-archive.md`，格式见 `guides/full-export-archive.md` |

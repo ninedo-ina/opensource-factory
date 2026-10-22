@@ -778,6 +778,23 @@ admin /import → 选择文件 / 粘贴内容（JSON / CSV / 书签 HTML）
 - `my_repositories` 以 `owner/repo` 为全局主键，他人已收藏的仓库按冲突跳过（Q38）；
 - 纯解析逻辑位于 `edge/src/import/parse.ts`，路由只负责鉴权、比对与写库；详见
   [data-import.md](../guides/data-import.md)。
+### 3.39 全量导出与归档流（M9-04）
+
+```
+admin /archive → GET /api/export/archive/summary（登录态）→ 数据集条数 / 记录数 / 估算大小
+→ 选择范围（full | knowledge）与格式（zip | json）
+→ GET /api/export/archive?scope=full&format=zip
+→ edge 按 user_id 依次只读查询 11 个数据集（knowledge 范围只取前 4 个）
+→ 纯函数构建 openfactory.archive.v1：
+   ├─ ZIP：manifest.json + README.md + checksums.sha256 + data/*.json（store 模式）
+   └─ JSON：{ manifest, checksums, data } 单文件
+→ Content-Disposition 附件下载（Cache-Control: no-store，服务端不留副本）
+```
+
+归档是**用户级逻辑归档**，与 M5-04 的整库物理备份互补：不新增表、不写 D1、
+不包含 sessions / extension_tokens / telegram_links / login_attempts / security_events
+等秘密与运维数据。每个数据文件带 SHA-256，ZIP 可用 `sha256sum -c` 校验。
+格式规范见 [full-export-archive.md](../guides/full-export-archive.md)。
 
 ## 4. 接口边界
 
@@ -852,6 +869,9 @@ admin /import → 选择文件 / 粘贴内容（JSON / CSV / 书签 HTML）
 | `/api/import/preview` | POST | 解析导入内容并返回统计 / 样例 / 问题（登录态；不写库） |
 | `/api/import/execute` | POST | 执行导入（JSON / CSV / 书签 HTML；UPSERT 仓库、分类、标签并写 `import_runs`） |
 | `/api/import/history` | GET | 当前用户最近导入记录（`limit` 1–50） |
+| `/api/export/archive/summary` | GET | 全量归档数据集统计（登录态；条数 / 记录 / 估算大小 / 范围与格式） |
+| `/api/export/archive/manifest` | GET | 全量归档 manifest 预览（`scope` / `format`，登录态） |
+| `/api/export/archive` | GET | 生成 `openfactory.archive.v1` 附件（`scope=full\|knowledge`、`format=zip\|json`，登录态） |
 | `/api/tag-suggestions` | GET | 打标建议列表（`status=pending\|accepted\|dismissed\|all`、`repoId`、`limit`、`offset`；返回汇总） |
 | `/api/tag-suggestions/generate` | POST | 基于摘要生成建议（`repoIds?` / `limit?` / `perRepo?`；VPS 优先、本地规则兜底） |
 | `/api/tag-suggestions/accept` | POST | 采纳建议（`ids` 或 `repoId + tags`；写 `tags` / `repo_tags`） |
