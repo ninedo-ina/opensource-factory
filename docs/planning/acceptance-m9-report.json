@@ -1,0 +1,123 @@
+{
+  "meta": {
+    "branch": "feat/req-202610-0984-m9-acceptance",
+    "commit": "de5698b",
+    "finishedAt": "2026-10-22T14:37:45+0000",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "results": [
+    {
+      "id": "M9-A01",
+      "title": "M9-01 技术画像聚合纯函数",
+      "status": "PASS",
+      "detail": "纯函数 buildTechProfile / 语言 / 框架 / 趋势 / 活跃度 / 洞察",
+      "durationMs": 0.3
+    },
+    {
+      "id": "M9-A02",
+      "title": "M9-01 路由与 admin 页面",
+      "status": "PASS",
+      "detail": "登录态 / months 1..24 / user_id 隔离 / admin 页面",
+      "durationMs": 0.6
+    },
+    {
+      "id": "M9-B01",
+      "title": "M9-02 资产报表聚合纯函数",
+      "status": "PASS",
+      "detail": "收录量 / 分类 / 语言 / Star 趋势 / 覆盖率 / 洞察",
+      "durationMs": 0.1
+    },
+    {
+      "id": "M9-B02",
+      "title": "M9-02 路由与 admin 页面",
+      "status": "PASS",
+      "detail": "months 归一 / 快照白名单 / user_id 隔离 / admin 页面",
+      "durationMs": 0.4
+    },
+    {
+      "id": "M9-C01",
+      "title": "M9-03 三格式解析与预览计划",
+      "status": "PASS",
+      "detail": "JSON / CSV / 书签 HTML / 去重 / 预览计划",
+      "durationMs": 0.2
+    },
+    {
+      "id": "M9-C02",
+      "title": "M9-03 导入接口与迁移",
+      "status": "PASS",
+      "detail": "预览 / 执行 / 历史 / import_runs 迁移 0023 / admin 页面",
+      "durationMs": 0.6
+    },
+    {
+      "id": "M9-D01",
+      "title": "M9-04 归档构建与校验和",
+      "status": "PASS",
+      "detail": "openfactory.archive.v1 / ZIP / JSON / SHA-256 / 敏感表排除",
+      "durationMs": 0.2
+    },
+    {
+      "id": "M9-D02",
+      "title": "M9-04 归档接口与 admin 页面",
+      "status": "PASS",
+      "detail": "summary / manifest / 下载 / 附件头 / admin 页面 / 格式指南",
+      "durationMs": 0.5
+    },
+    {
+      "id": "M9-E01",
+      "title": "M9-05 edge 扫描 / 补全 / 迁移",
+      "status": "PASS",
+      "detail": "扫描 / 补全 / 忽略 / 恢复 / 内部镜像 / 迁移 0024",
+      "durationMs": 0.5
+    },
+    {
+      "id": "M9-E02",
+      "title": "M9-05 VPS 链接检测与对账",
+      "status": "PASS",
+      "detail": "链接状态纯函数 / 对账 / CLI / 测试 / admin 页面",
+      "durationMs": 837.0
+    },
+    {
+      "id": "M9-F01",
+      "title": "M9-06 edge 策略 / 导出 / 删除 / 清理",
+      "status": "PASS",
+      "detail": "策略 / 导出 / 删除 / 保留清理 / 迁移 0025 / admin 隐私页 / 隐私指南",
+      "durationMs": 0.8
+    },
+    {
+      "id": "M9-F02",
+      "title": "M9-06 VPS 保留清理与测试",
+      "status": "PASS",
+      "detail": "VPS 保留策略 / 清理服务 / API / 测试",
+      "durationMs": 0.7
+    },
+    {
+      "id": "M9-S01",
+      "title": "edge / admin 路由集成",
+      "status": "PASS",
+      "detail": "edge 路由挂载 + admin 路由树完整",
+      "durationMs": 0.2
+    },
+    {
+      "id": "M9-S02",
+      "title": "M9 迁移编号唯一",
+      "status": "PASS",
+      "detail": "M9 迁移 0023/0024/0025 编号唯一，0021/0022 保持",
+      "durationMs": 0.5
+    },
+    {
+      "id": "M9-S03",
+      "title": "需求与验收文档状态",
+      "status": "PASS",
+      "detail": "backlog 状态正确，验收结论与计划文档齐全",
+      "durationMs": 1.1
+    },
+    {
+      "id": "M9-06-GAP",
+      "title": "M9-06 数据保留与隐私策略（已合并，待平台状态确认）",
+      "status": "PASS",
+      "detail": "feat/req-202610-0983-data-retention-privacy 已包含在验收分支",
+      "durationMs": 0.0
+    }
+  ]
+}

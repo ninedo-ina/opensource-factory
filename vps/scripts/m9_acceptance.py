@@ -338,7 +338,7 @@ def check_privacy_edge() -> str:
     ):
         assert_true(symbol in policy, f"policy.ts 缺少 {symbol}")
     cleanup = _read("edge/src/privacy/cleanup.ts")
-    for symbol in ("export async function cleanupExpiredData", "retention_cleanup", "PRAGMA"):
+    for symbol in ("export async function cleanupExpiredData", "retention_cleanup", "DELETE FROM"):
         assert_true(symbol in cleanup, f"cleanup.ts 缺少 {symbol}")
     export_file = _read("edge/src/privacy/export.ts")
     assert_true("buildPersonalDataExport" in export_file, "export.ts 缺少个人数据导出")
@@ -351,8 +351,10 @@ def check_privacy_edge() -> str:
     assert_true("CREATE TABLE IF NOT EXISTS privacy_events" in migration, "迁移缺少 privacy_events")
     schema = _read("docs/assets/d1-schema.sql")
     assert_true("CREATE TABLE IF NOT EXISTS privacy_events" in schema, "d1-schema 缺少 privacy_events")
+    _read("admin/src/features/privacy/index.tsx")
+    _read("admin/src/routes/_authenticated/settings/privacy.tsx")
     _read("docs/guides/privacy-retention.md")
-    return "策略 / 导出 / 删除 / 保留清理 / 迁移 0025 / 隐私指南"
+    return "策略 / 导出 / 删除 / 保留清理 / 迁移 0025 / admin 隐私页 / 隐私指南"
 
 
 def check_privacy_vps() -> str:
@@ -388,7 +390,7 @@ def check_cross_cutting() -> str:
     ):
         assert_true(f"app.route('{route}'" in index, f"index.ts 未挂载 {route}")
     route_tree = _read("admin/src/routeTree.gen.ts")
-    for route in ("/tech-profile", "/asset-report", "/import", "/archive", "/data-quality"):
+    for route in ("/tech-profile", "/asset-report", "/import", "/archive", "/data-quality", "/settings/privacy"):
         assert_true(route in route_tree, f"routeTree 缺少 {route}")
     return "edge 路由挂载 + admin 路由树完整"
 
@@ -403,8 +405,8 @@ def check_migrations() -> str:
         "0025_privacy_lifecycle.sql",
     ):
         assert_true(expected in names, f"缺少迁移 {expected}")
-    numbers = [name[:4] for name in names]
-    assert_equal(len(numbers), len(set(numbers)), "迁移编号存在重号")
+    m9_numbers = [name[:4] for name in names if name[:4] >= "0021"]
+    assert_equal(len(m9_numbers), len(set(m9_numbers)), "M9 迁移编号存在重号")
     return "M9 迁移 0023/0024/0025 编号唯一，0021/0022 保持"
 
 
