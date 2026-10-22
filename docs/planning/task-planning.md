@@ -105,6 +105,7 @@
 | IT-0069 | M8-06 | CLI 工具（命令行查询 / 收藏） | IT-0068；M8-05 | ⏳ 待排期（平台 pending） |
 | IT-0070 | M8-07 | 离线可用（PWA 缓存 + 本地数据） | M8-01 | ⏳ 待排期（平台 pending） |
 | IT-0071 | M8-08 | M8 验收与回顾（集成 M8-01~04 + 跨分支验收脚本 + 缺口登记） | M8-01~07 | ✅ 已完成（2026-10-22） |
+| IT-0072 | M9-05 | 数据质量治理（质量台账 + 失效链接检测 + 元数据补全 + admin `/data-quality`；含 M1-16 最小对账 CLI） | M1-16 | ✅ 已完成（2026-10-22，REQ-202610-0982） |
 
 > 说明：IT-0004 / IT-0005 在人工资源（Cloudflare 账号、OAuth App）就绪前，可先以 `wrangler --local` + 本地回调完成开发与验证；其余按需求池顺序滚动排期。
 
@@ -161,3 +162,4 @@
 | 2026-10-22 | 验收 | IT-0063 / M7-10 完成（REQ-202610-0969）：集成 M7-01~07 七个分支，M7 验收 14/14 PASS、2 项平台 pending 缺口登记；三端检查全绿（vps 532 / edge 180 / admin 224）；报告见 `planning/acceptance-m7.md` / `acceptance-m7-report.md` |
 | 2026-10-22 | 评估 | IT-0064 / M8-04 完成（REQ-202610-0973）：新增离线评估工具 `app.services.quick_entry_eval`（6 平台 × 8 维加权评分、M8-05 16 项 API 就绪度、分阶段路线），产出 `architecture/quick-entry-evaluation.md` 与 `assets/quick-entry-api-contract.json`；Raycast 4.10 首选、Apple 快捷指令 3.95 次选；M8-05 未落地前全部阻塞 |
 | 2026-10-22 | 验收 | IT-0071 / M8-08 完成（REQ-202610-0977）：集成 M8-01~04 四个分支，M8 验收 13/13 PASS、M8-05~07 三项平台 pending 缺口登记；三端检查全绿；报告见 `planning/acceptance-m8.md` / `acceptance-m8-report.md` |
+| 2026-10-22 | 交付 | IT-0072 / M9-05 数据质量治理（REQ-202610-0982）：D1 `data_quality_scans` / `data_quality_issues`（migration 0023）、edge 扫描 / 补全 / 忽略 / 恢复与内部镜像接口、VPS 链接检测 / GitHub 元数据 patch / `reconcile` CLI、admin `/data-quality` 总览页；计划见 `planning/plan-req-202610-0982-data-quality-governance.md` |

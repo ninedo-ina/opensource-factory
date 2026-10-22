@@ -18,6 +18,7 @@ from app.api import (
     analysis,
     backup,
     category_suggestions,
+    data_quality,
     degradation,
     duplicates,
     licenses,
@@ -114,6 +115,7 @@ app.include_router(vector_index.router)
 app.include_router(search.router)
 app.include_router(category_suggestions.router)
 app.include_router(duplicates.router)
+app.include_router(data_quality.router)
 app.include_router(licenses.router)
 app.include_router(degradation.router)
 app.include_router(push.router)

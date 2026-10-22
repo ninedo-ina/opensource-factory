@@ -717,6 +717,27 @@ python -m app.quick_entry_eval report
 结论：M8-05 个人令牌与 `/api/v1/*` 落地前，所有快捷入口均被阻塞；
 本评估只定义契约与优先级，不替代 M8-05/06 的实现与验收。
 
+### 3.36 数据质量治理（M9-05）
+
+```
+admin /data-quality
+→ POST /api/data-quality/scan
+   ↳ edge 读当前用户 my_repositories（≤200）
+   ↳ 本地规则：元数据缺失 / 陈旧（>90 天）+ 重复条目（复用 M6-03 detectNameDuplicates）
+   ↳ 配置 VPS_NODE_URL 时 POST /api/data-quality/check-links（HEAD / GET，最多 30 个）
+   ↳ 问题按 (user_id, repo_id, issue_key) upsert 到 D1 data_quality_issues
+   ↳ 本轮未再检出的 open 问题自动置 fixed；ignored 保持忽略
+→ POST /api/data-quality/fix
+   ↳ VPS /api/data-quality/metadata 拉取 GitHub 详情 → 回写简介 / 语言 / Star / URL / License
+   ↳ VPS 不可达时仅用 readme_summary 首句回填简介（本地降级）
+→ POST /api/data-quality/issues/ignore|restore 批量忽略 / 恢复
+```
+
+- 质量分 `100 - 8×critical - 4×warning - 1×info`（下限 0），按扫描记录留存历史；
+- 扫描只读，不自动删除 / 合并仓库；补全动作显式触发，且只写 GitHub 可提供的字段；
+- 链接检测单次上限 30 个，失败 / 限流标记 `unknown` 不误报；`mode=local` 时页面明确提示降级；
+- `GET /api/internal/data-quality/mirror` 导出 D1 仓库快照，供 VPS CLI `python -m app.data_quality reconcile` 做 M1-16 最小对账。
+
 ## 4. 接口边界
 
 ### 4.1 admin ↔ edge（JSON over HTTPS，Cookie 会话）
@@ -779,6 +800,11 @@ python -m app.quick_entry_eval report
 | `/api/duplicates/dismiss` | POST | 忽略一个重复簇（`clusterId` / `repoIds` / `reason`，按用户存 D1） |
 | `/api/duplicates/dismissed` | GET | 当前用户已忽略的重复簇 |
 | `/api/duplicates/dismiss/:clusterId` | DELETE | 取消忽略（恢复展示） |
+| `/api/data-quality` | GET | 数据质量总览（`type` / `severity` / `status` / `limit`；返回摘要、问题台账、最近扫描与历史） |
+| `/api/data-quality/scan` | POST | 执行质量扫描（`checkLinks` / `maxRepos`；本地规则 + VPS 链接检测，幂等 upsert） |
+| `/api/data-quality/fix` | POST | 补全元数据（`repoIds` / `fields`；VPS GitHub 详情 → D1，VPS 不可达用 README 摘要降级） |
+| `/api/data-quality/issues/ignore` | POST | 批量忽略问题（`issueIds`） |
+| `/api/data-quality/issues/restore` | POST | 批量恢复问题为待处理（`issueIds`） |
 | `/api/licenses/catalog` | GET | License 目录（分类 / 风险 / 义务 / 提醒，公开） |
 | `/api/licenses/summary` | GET | License 分布与风险统计（`?scope=my\|trending\|all`；`my` / `all` 需登录） |
 | `/api/analysis/dependencies` | GET | 依赖分析聚合（`?top=`；当前用户仓库 → VPS；VPS 不可达回退 D1 语言概览） |
@@ -865,6 +891,8 @@ python -m app.quick_entry_eval report
 | `/api/search/fulltext/rebuild` | POST | 全量重建 README 全文索引 |
 | `/api/search/similar` | POST | 相似项目向量近邻（`source` / `repoId` / `topK` / `scope` / `minScore` / `excludeSaved`；返回未水合 hits） |
 | `/api/duplicates/scan` | POST | 重复 / 相似项目检测（`scope` / `myRepoIds` / `maxRepos` / `maxClusters`；返回未水合簇，只读不落库） |
+| `/api/data-quality/check-links` | POST | 批量 HEAD / GET 校验仓库链接（`items[]` ≤100，服务端截断 50；返回 ok / broken / redirected / unknown） |
+| `/api/data-quality/metadata` | POST | 按仓库 id 拉取 GitHub 详情，返回可回写 D1 的元数据 patch（`repoIds[]` ≤50） |
 | `/api/category-suggestions/generate` | POST | 自动分类建议（`repos[]` 内联快照 / `perRepo` / `minScore`；返回业务线建议，无状态不落库） |
 | `/api/search/status` | GET | 向量覆盖率、模型分布与最近向量化运行 |
 | `/api/analysis/dependencies` | GET | 依赖分析聚合（`repoIds` 逗号分隔 / `top`；只读本地表） |
