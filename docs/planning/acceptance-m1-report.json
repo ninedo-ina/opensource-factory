@@ -1,0 +1,185 @@
+{
+  "meta": {
+    "branch": "feat/req-202610-0907-m1-acceptance",
+    "commit": "bd12068",
+    "finishedAt": "2026-10-22T05:06:20.143Z",
+    "platform": "linux x64",
+    "nodeVersion": "v22.23.1"
+  },
+  "results": [
+    {
+      "id": "M1-A01",
+      "title": "健康检查 /healthz",
+      "status": "PASS",
+      "detail": "200 {\"status\":\"ok\"}",
+      "durationMs": 26.30327000000034
+    },
+    {
+      "id": "M1-A02",
+      "title": "未登录访问 /api/auth/me 返回 401",
+      "status": "PASS",
+      "detail": "401 unauthorized",
+      "durationMs": 14.372074999999313
+    },
+    {
+      "id": "M1-A03",
+      "title": "种子会话登录态 /api/auth/me",
+      "status": "PASS",
+      "detail": "200 tester",
+      "durationMs": 46.27958199999921
+    },
+    {
+      "id": "M1-B01",
+      "title": "仓库列表返回当前用户数据",
+      "status": "PASS",
+      "detail": "100 条",
+      "durationMs": 43.25788400000238
+    },
+    {
+      "id": "M1-B02",
+      "title": "仓库列表默认分页上限（M1-12）",
+      "status": "PASS",
+      "detail": "100 条（≤200）",
+      "durationMs": 39.98711700000058
+    },
+    {
+      "id": "M1-B03",
+      "title": "limit=5 精确返回 5 条（M1-12）",
+      "status": "PASS",
+      "detail": "5 条",
+      "durationMs": 26.560621000000538
+    },
+    {
+      "id": "M1-B04",
+      "title": "关键字筛选 q=支付",
+      "status": "PASS",
+      "detail": "100 条命中",
+      "durationMs": 39.85106799999994
+    },
+    {
+      "id": "M1-B05",
+      "title": "分类筛选 categoryId=cat-pay",
+      "status": "PASS",
+      "detail": "100 条",
+      "durationMs": 39.178312000000005
+    },
+    {
+      "id": "M1-B06",
+      "title": "LIKE 通配符转义 q=%（M1-12）",
+      "status": "PASS",
+      "detail": "0 条（未放大）",
+      "durationMs": 28.538276999999653
+    },
+    {
+      "id": "M1-B07",
+      "title": "组合筛选 + 排序 + 分页（M1-11）",
+      "status": "PASS",
+      "detail": "20 条，stars 5→100 升序",
+      "durationMs": 32.528173999999126
+    },
+    {
+      "id": "M1-C01",
+      "title": "分类列表与树字段（M1-09）",
+      "status": "PASS",
+      "detail": "5 个分类，树字段完整",
+      "durationMs": 32.52069699999993
+    },
+    {
+      "id": "M1-C02",
+      "title": "分类写操作 CRUD（M1-09）",
+      "status": "PASS",
+      "detail": "新建 / 编辑 / 删除通过",
+      "durationMs": 108.85874100000001
+    },
+    {
+      "id": "M1-C03",
+      "title": "标签写操作（M1-10）",
+      "status": "PASS",
+      "detail": "标签新建 / 列表通过",
+      "durationMs": 51.232946000000084
+    },
+    {
+      "id": "M1-D01",
+      "title": "仪表盘统计 /api/dashboard/stats",
+      "status": "PASS",
+      "detail": "totalRepos=1200",
+      "durationMs": 43.696232999998756
+    },
+    {
+      "id": "M1-D02",
+      "title": "热榜列表 /api/trending",
+      "status": "PASS",
+      "detail": "20 条",
+      "durationMs": 18.19447599999694
+    },
+    {
+      "id": "M1-D03",
+      "title": "推荐列表 /api/recommendations",
+      "status": "PASS",
+      "detail": "10 条",
+      "durationMs": 29.91021499999988
+    },
+    {
+      "id": "M1-E01",
+      "title": "同步触发 /api/sync → mock VPS",
+      "status": "PASS",
+      "detail": "taskId=m1-e2e-task-1",
+      "durationMs": 38.13304600000265
+    },
+    {
+      "id": "M1-E02",
+      "title": "同步任务查询 /api/tasks（M1-08）",
+      "status": "PASS",
+      "detail": "任务状态 success",
+      "durationMs": 59.76889099999971
+    },
+    {
+      "id": "M1-P01",
+      "title": "性能抽样 P95 < 300ms",
+      "status": "PASS",
+      "detail": "仓库列表 limit=100 P95 39.0ms；关键字检索 q=支付 P95 38.9ms；分类筛选 cat-pay P95 40.1ms；仪表盘统计 P95 47.3ms",
+      "durationMs": 165.3380869999928
+    },
+    {
+      "id": "M1-F01",
+      "title": "登出 /api/auth/logout 清除会话",
+      "status": "PASS",
+      "detail": "204 → 401",
+      "durationMs": 44.56263399999443
+    }
+  ],
+  "perf": [
+    {
+      "path": "/api/repos?limit=100",
+      "samples": 200,
+      "p50": 31.468250999998418,
+      "p95": 38.95892100000128,
+      "max": 50.722843999999895,
+      "label": "仓库列表 limit=100"
+    },
+    {
+      "path": "/api/repos?q=%E6%94%AF%E4%BB%98",
+      "samples": 200,
+      "p50": 31.829775000001973,
+      "p95": 38.93328699999984,
+      "max": 47.76084300000002,
+      "label": "关键字检索 q=支付"
+    },
+    {
+      "path": "/api/repos?categoryId=cat-pay",
+      "samples": 200,
+      "p50": 32.60036299999774,
+      "p95": 40.12161499999638,
+      "max": 50.97770800000217,
+      "label": "分类筛选 cat-pay"
+    },
+    {
+      "path": "/api/dashboard/stats",
+      "samples": 200,
+      "p50": 35.41181900000083,
+      "p95": 47.32426399999531,
+      "max": 68.06363399999827,
+      "label": "仪表盘统计"
+    }
+  ]
+}

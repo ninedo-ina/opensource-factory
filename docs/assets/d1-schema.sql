@@ -83,6 +83,20 @@ CREATE TABLE repo_tags (
     PRIMARY KEY (repo_id, tag_id)
 );
 
+-- ── 同步任务（M1-08）────────────────────────────────────────────
+CREATE TABLE sync_tasks (
+    id TEXT PRIMARY KEY,             -- VPS / Celery 返回的 taskId
+    user_id TEXT,                    -- 触发用户（admin 仅能查看自己的任务）
+    task_type TEXT NOT NULL DEFAULT 'sync',
+    status TEXT NOT NULL DEFAULT 'pending',  -- pending / started / progress / success / failure / unknown
+    progress TEXT,                   -- 进度快照 JSON（camelCase）
+    result TEXT,                     -- 结果 JSON
+    error TEXT,                      -- 错误摘要
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    finished_at DATETIME
+);
+
 -- ── 智能推荐 ────────────────────────────────────────────────────
 CREATE TABLE recommendations (
     id TEXT PRIMARY KEY,
@@ -101,11 +115,49 @@ CREATE TABLE recommendations (
 );
 
 -- ── 索引 ────────────────────────────────────────────────────────
-CREATE INDEX idx_my_repositories_user_id ON my_repositories (user_id);
 CREATE INDEX idx_my_repositories_category_id ON my_repositories (category_id);
+CREATE INDEX idx_my_repositories_user_stars
+    ON my_repositories (user_id, stars DESC, updated_at DESC);
+CREATE INDEX idx_my_repositories_user_category_stars
+    ON my_repositories (user_id, category_id, stars DESC, updated_at DESC);
+CREATE INDEX idx_my_repositories_user_updated
+    ON my_repositories (user_id, updated_at DESC);
+CREATE INDEX idx_my_repositories_user_language
+    ON my_repositories (user_id, language);
+CREATE INDEX idx_categories_parent_sort ON categories (parent_id, sort_order, name);
 CREATE INDEX idx_trending_repositories_stars_today ON trending_repositories (stars_today DESC);
 CREATE INDEX idx_sessions_user_id ON sessions (user_id);
 CREATE INDEX idx_sessions_expires_at ON sessions (expires_at);
+CREATE INDEX idx_sync_tasks_user_created ON sync_tasks (user_id, created_at DESC);
+CREATE INDEX idx_sync_tasks_status ON sync_tasks (status);
 CREATE INDEX idx_recommendations_user_id ON recommendations (user_id);
 CREATE INDEX idx_recommendations_score ON recommendations (score DESC);
 CREATE INDEX idx_repo_tags_tag_id ON repo_tags (tag_id);
+
+-- ── 触发器：标签计数维护（M1-10）──────────────────────────────────
+CREATE TRIGGER trg_repo_tags_count_insert
+AFTER INSERT ON repo_tags
+BEGIN
+  UPDATE tags
+     SET count = (SELECT COUNT(*) FROM repo_tags WHERE tag_id = NEW.tag_id)
+   WHERE id = NEW.tag_id;
+END;
+
+CREATE TRIGGER trg_repo_tags_count_delete
+AFTER DELETE ON repo_tags
+BEGIN
+  UPDATE tags
+     SET count = (SELECT COUNT(*) FROM repo_tags WHERE tag_id = OLD.tag_id)
+   WHERE id = OLD.tag_id;
+END;
+
+CREATE TRIGGER trg_repo_tags_count_update
+AFTER UPDATE OF tag_id ON repo_tags
+BEGIN
+  UPDATE tags
+     SET count = (SELECT COUNT(*) FROM repo_tags WHERE tag_id = OLD.tag_id)
+   WHERE id = OLD.tag_id;
+  UPDATE tags
+     SET count = (SELECT COUNT(*) FROM repo_tags WHERE tag_id = NEW.tag_id)
+   WHERE id = NEW.tag_id;
+END;

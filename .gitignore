@@ -1,6 +1,9 @@
 # ── 依赖 ─────────────────────────────────────────────
 node_modules/
 **/node_modules/
+# 本地 worktree 的依赖软链（指向其他检出，不入库）
+/edge/node_modules
+/admin/node_modules
 
 # ── 构建产物 ──────────────────────────────────────────
 dist/
@@ -12,6 +15,8 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+# 本地 worktree 的虚拟环境软链
+/vps/.venv
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
@@ -26,6 +31,9 @@ venv/
 *.db
 *.sqlite3
 **/data/
+# 例外：admin 布局的静态数据目录（sidebar-data.ts 属于源码，必须入库）
+!admin/src/components/layout/data/
+!admin/src/components/layout/data/**
 
 # ── 测试产物 ──────────────────────────────────────────
 coverage/

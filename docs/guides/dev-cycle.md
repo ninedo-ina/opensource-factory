@@ -41,6 +41,13 @@
 - **验证**：三端检查（admin lint/build/test、edge typecheck、vps pytest）全绿；文档同步（索引 / 问答 / 周期）；
 - **遗留**：平台 keyId 39 修复仍待处理（Q7）；部署口径确认（Q9）。
 
+### REQ-202610-0907 · M1 验收（2026-10-22）
+
+- **范围**：M1 端到端走查、性能抽样、文档同步；集成 0900（同步任务）/ 0901（分类树）/ 0902（标签）/ 0903（组合筛选）/ 0904（检索优化）；
+- **交付**：`edge/scripts/m1-acceptance.mjs`（本地 D1 + mock VPS，支持 `--strict` / `--report-md` / `--report-json`）、`docs/planning/acceptance-m1.md`、验收报告与数据模型 / Schema / 任务计划 / 需求池 / 路线图同步；
+- **验证**：M1 验收 20 PASS / 0 GAP / 0 FAIL；admin lint/build/test（105 用例）、edge typecheck/脚本测试/分类 E2E/检索基准、vps pytest（24 用例）全绿；
+- **遗留**：真实 GitHub OAuth / Cloudflare D1 / 生产部署待凭据；M1-13（0905）、M1-14（0906）分支自测通过待合并；M1-16 未实现。
+
 ### 后续周期（规划）
 
 - REQ 下一阶段：按 `planning/roadmap.md` 里程碑 M1 起推进（资产同步闭环），迭代排期见 `planning/task-planning.md`；需求池见 `requirements/backlog.md`。

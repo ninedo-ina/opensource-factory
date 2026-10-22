@@ -107,6 +107,25 @@ export interface TagCountRow {
   count: number;
 }
 
+export interface TagRow {
+  id: number;
+  name: string;
+  count: number;
+}
+
+export interface SyncTaskRow {
+  id: string;
+  user_id: string | null;
+  task_type: string;
+  status: string;
+  progress: string | null;
+  result: string | null;
+  error: string | null;
+  created_at: string;
+  updated_at: string;
+  finished_at: string | null;
+}
+
 // ── API 响应实体（前端契约）─────────────────────────────────────
 
 /** GET /api/auth/me */
@@ -127,8 +146,10 @@ export interface RepoItem {
   stars: number;
   forks: number;
   category: string | null;
+  categoryId: string | null;
   tags: string[];
   updatedAt: string | null;
+  createdAt: string | null;
   url: string;
 }
 
@@ -158,10 +179,27 @@ export interface Recommendation {
   url: string | null;
 }
 
+/** GET /api/categories 列表项（扁平结构，前端按 parentId 组树） */
+export interface CategoryItem {
+  id: string;
+  name: string;
+  parentId: string | null;
+  description: string | null;
+  sortOrder: number;
+  count: number;
+}
+
 /** GET /api/categories */
 export interface CategoriesPayload {
-  categories: Array<{ id: string; name: string; count: number; description: string | null }>;
+  categories: CategoryItem[];
   tags: Array<{ name: string; count: number }>;
+}
+
+/** GET /api/tags 列表项 */
+export interface TagItem {
+  id: number;
+  name: string;
+  count: number;
 }
 
 /** GET /api/dashboard/stats */
@@ -170,6 +208,31 @@ export interface DashboardStats {
   trendingToday: number;
   pendingRecommendations: number;
   categoryCount: number;
+}
+
+/** 任务进度快照（与 VPS `GET /api/tasks/{taskId}` 的 progress 字段一致） */
+export interface TaskProgress {
+  phase?: string;
+  page?: number;
+  pagesTotal?: number | null;
+  fetched?: number;
+  total?: number | null;
+  percent?: number;
+  done?: boolean;
+}
+
+/** GET /api/tasks 列表项 / GET /api/tasks/{taskId} */
+export interface SyncTask {
+  taskId: string;
+  type: string;
+  status: string;
+  progress: TaskProgress | null;
+  result: unknown;
+  error: string | null;
+  createdAt: string;
+  updatedAt: string;
+  finishedAt: string | null;
+  stale?: boolean;
 }
 
 /** GitHub /user 接口返回（仅取所需字段） */

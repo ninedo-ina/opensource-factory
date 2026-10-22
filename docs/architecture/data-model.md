@@ -1,6 +1,6 @@
 # 数据模型 · Data Model
 
-> 文档编号：AR-02 ｜ 维护人：fntp ｜ 数据资产：[docs/assets/d1-schema.sql](../assets/d1-schema.sql)（与 `edge/migrations/0001_init.sql` 同步）
+> 文档编号：AR-02 ｜ 维护人：fntp ｜ 数据资产：[docs/assets/d1-schema.sql](../assets/d1-schema.sql)（与 `edge/migrations/0001~0006` 同步）
 
 ## 1. 总览
 
@@ -15,6 +15,7 @@ my_repositories >──< repo_tags >──< tags
   ▼
 categories（parent_id 自关联，无限级）
 
+sync_tasks                   （同步任务状态，user_id 关联触发者）
 trending_repositories        （独立，公共数据）
 recommendations              （user_id 可空 = 全局推荐）
 ```
@@ -84,9 +85,21 @@ recommendations              （user_id 可空 = 全局推荐）
 ### 3.3 `tags` / `repo_tags` 标签
 
 - `tags`：`id`、`name`（唯一）、`count`（冗余计数）；
-- `repo_tags`：仓库与标签的多对多关联。
+- `repo_tags`：仓库与标签的多对多关联；
+- `count` 由 `repo_tags` 的 INSERT / DELETE / UPDATE 触发器实时重算（迁移 0005），任何写入路径都不会漂移。
 
-### 3.4 `recommendations` 推荐
+### 3.4 `sync_tasks` 同步任务
+
+| 字段 | 说明 |
+| --- | --- |
+| id TEXT PK | VPS / Celery 返回的 taskId |
+| user_id | 触发用户（admin 仅能查看自己的任务） |
+| task_type | `sync` / `sync-starred` 等 |
+| status | `pending` / `started` / `progress` / `success` / `failure` / `unknown` |
+| progress / result / error | 进度快照 / 结果 / 错误摘要（JSON 字符串） |
+| created_at / updated_at / finished_at | 时间戳 |
+
+### 3.5 `recommendations` 推荐
 
 | 字段 | 说明 |
 | --- | --- |
@@ -103,9 +116,11 @@ recommendations              （user_id 可空 = 全局推荐）
 
 | 表 | 索引 | 用途 |
 | --- | --- | --- |
-| my_repositories | `(user_id)`、`(category_id)`、`(platform)` | 列表与筛选 |
+| my_repositories | `(user_id, stars DESC, updated_at DESC)`、`(user_id, category_id, stars DESC, updated_at DESC)`、`(user_id, updated_at DESC)`、`(user_id, language)` | 列表、组合筛选与排序（覆盖单列 user_id） |
+| categories | `(parent_id, sort_order, name)` | 分类树与同级排序 |
 | trending_repositories | `(stars_today DESC)`、`(crawled_at)` | 榜单查询 |
 | sessions | `(user_id)`、`(expires_at)` | 会话校验与清理 |
+| sync_tasks | `(user_id, created_at DESC)`、`(status)` | 任务列表与状态轮询 |
 | repo_tags | `(repo_id)`、`(tag_id)` | 反查 |
 | recommendations | `(user_id, score DESC)` | 推荐列表 |
 
