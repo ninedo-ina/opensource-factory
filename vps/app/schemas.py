@@ -1974,3 +1974,16 @@ class DataQualityMetadataResponse(BaseModel):
     """元数据补全响应。"""
 
     items: list[DataQualityMetadataItemOut] = Field(default_factory=list)
+
+
+class PrivacyPurgeUserRequest(BaseModel):
+    """边缘删除账号后的 VPS 镜像清理请求（M9-06）。"""
+
+    userId: str = Field(min_length=1, max_length=128)
+    login: Optional[str] = Field(default=None, max_length=255)
+
+
+class PrivacyCleanupRequest(BaseModel):
+    """手动触发本地保留清理。"""
+
+    dryRun: bool = False

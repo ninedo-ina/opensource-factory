@@ -473,3 +473,16 @@ CREATE INDEX IF NOT EXISTS idx_data_quality_issues_user_status
     ON data_quality_issues (user_id, status, severity);
 CREATE INDEX IF NOT EXISTS idx_data_quality_issues_scan
     ON data_quality_issues (scan_id);
+-- ── 隐私审计（M9-06，迁移 0025）────────────────────────────────
+CREATE TABLE IF NOT EXISTS privacy_events (
+    id TEXT PRIMARY KEY,                 -- pe_ + 32 位随机 hex
+    event_type TEXT NOT NULL CHECK (event_type IN ('export', 'delete', 'retention_cleanup')),
+    actor_hash TEXT,                     -- sha256(user_id)；保留清理为 NULL
+    detail TEXT NOT NULL DEFAULT '{}',   -- JSON：策略版本 / 各表删除数 / 总数
+    created_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_privacy_events_type_created
+    ON privacy_events (event_type, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_privacy_events_actor_created
+    ON privacy_events (actor_hash, created_at DESC);

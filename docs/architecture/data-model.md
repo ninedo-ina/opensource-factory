@@ -715,6 +715,22 @@ VPS 本地 SQLite 表（M2-04），不复制到 D1；用于留存样本、人工
 唯一索引 `(user_id, repo_id, issue_key)` 保证重复扫描幂等；`(user_id, status, severity)` 服务问题列表与汇总，
 `(scan_id)` 用于按扫描批次回溯。D1 为问题台账主数据，VPS 只负责链接检测与 GitHub 元数据 patch。
 
+### 3.29 `privacy_events` 隐私审计（D1 迁移 `0025` / VPS 本地表，M9-06）
+
+> 记录数据主体导出、账号删除与每日保留清理。只保存事件类型、用户 id 哈希与聚合计数，
+> 不含邮箱、令牌、Cookie 或推送目标；保留期 365 天。
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| id | TEXT PK | `pe_` + 32 位 hex |
+| event_type | TEXT | `export` / `delete` / `retention_cleanup` |
+| actor_hash | TEXT NULL | `sha256(user_id)`；保留清理为 NULL |
+| detail | TEXT | JSON：策略版本、各表删除数、总数 |
+| created_at | TEXT / DATETIME | 事件时间（UTC） |
+
+索引：`(event_type, created_at DESC)` 供审计筛选，`(actor_hash, created_at DESC)` 供用户导出。
+D1 与 VPS 使用同名表，字段语义一致；VPS 表由 SQLAlchemy `PrivacyEvent` 模型建表。
+
 ## 4. 索引策略
 
 | 表 | 索引 | 用途 |
