@@ -41,6 +41,7 @@ import { Route as AuthenticatedSettingsExtensionRouteImport } from './routes/_au
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
 import { Route as AuthenticatedStarTrendsIndexRouteImport } from './routes/_authenticated/star-trends/index'
 import { Route as AuthenticatedTagSuggestionsIndexRouteImport } from './routes/_authenticated/tag-suggestions/index'
+import { Route as AuthenticatedTechProfileIndexRouteImport } from './routes/_authenticated/tech-profile/index'
 import { Route as AuthenticatedTechStackIndexRouteImport } from './routes/_authenticated/tech-stack/index'
 import { Route as AuthenticatedTrendingIndexRouteImport } from './routes/_authenticated/trending/index'
 import { Route as AuthenticatedUpdatesIndexRouteImport } from './routes/_authenticated/updates/index'
@@ -228,6 +229,12 @@ const AuthenticatedTagSuggestionsIndexRoute =
     path: '/tag-suggestions/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedTechProfileIndexRoute =
+  AuthenticatedTechProfileIndexRouteImport.update({
+    id: '/tech-profile/',
+    path: '/tech-profile/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedTechStackIndexRoute =
   AuthenticatedTechStackIndexRouteImport.update({
     id: '/tech-stack/',
@@ -285,6 +292,7 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/star-trends/': typeof AuthenticatedStarTrendsIndexRoute
   '/tag-suggestions/': typeof AuthenticatedTagSuggestionsIndexRoute
+  '/tech-profile/': typeof AuthenticatedTechProfileIndexRoute
   '/tech-stack/': typeof AuthenticatedTechStackIndexRoute
   '/trending/': typeof AuthenticatedTrendingIndexRoute
   '/updates/': typeof AuthenticatedUpdatesIndexRoute
@@ -321,6 +329,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/star-trends': typeof AuthenticatedStarTrendsIndexRoute
   '/tag-suggestions': typeof AuthenticatedTagSuggestionsIndexRoute
+  '/tech-profile': typeof AuthenticatedTechProfileIndexRoute
   '/tech-stack': typeof AuthenticatedTechStackIndexRoute
   '/trending': typeof AuthenticatedTrendingIndexRoute
   '/updates': typeof AuthenticatedUpdatesIndexRoute
@@ -360,6 +369,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/star-trends/': typeof AuthenticatedStarTrendsIndexRoute
   '/_authenticated/tag-suggestions/': typeof AuthenticatedTagSuggestionsIndexRoute
+  '/_authenticated/tech-profile/': typeof AuthenticatedTechProfileIndexRoute
   '/_authenticated/tech-stack/': typeof AuthenticatedTechStackIndexRoute
   '/_authenticated/trending/': typeof AuthenticatedTrendingIndexRoute
   '/_authenticated/updates/': typeof AuthenticatedUpdatesIndexRoute
@@ -399,6 +409,7 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/star-trends/'
     | '/tag-suggestions/'
+    | '/tech-profile/'
     | '/tech-stack/'
     | '/trending/'
     | '/updates/'
@@ -435,6 +446,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/star-trends'
     | '/tag-suggestions'
+    | '/tech-profile'
     | '/tech-stack'
     | '/trending'
     | '/updates'
@@ -473,6 +485,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/'
     | '/_authenticated/star-trends/'
     | '/_authenticated/tag-suggestions/'
+    | '/_authenticated/tech-profile/'
     | '/_authenticated/tech-stack/'
     | '/_authenticated/trending/'
     | '/_authenticated/updates/'
@@ -715,6 +728,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTagSuggestionsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/tech-profile/': {
+      id: '/_authenticated/tech-profile/'
+      path: '/tech-profile'
+      fullPath: '/tech-profile/'
+      preLoaderRoute: typeof AuthenticatedTechProfileIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/tech-stack/': {
       id: '/_authenticated/tech-stack/'
       path: '/tech-stack'
@@ -791,6 +811,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSearchIndexRoute: typeof AuthenticatedSearchIndexRoute
   AuthenticatedStarTrendsIndexRoute: typeof AuthenticatedStarTrendsIndexRoute
   AuthenticatedTagSuggestionsIndexRoute: typeof AuthenticatedTagSuggestionsIndexRoute
+  AuthenticatedTechProfileIndexRoute: typeof AuthenticatedTechProfileIndexRoute
   AuthenticatedTechStackIndexRoute: typeof AuthenticatedTechStackIndexRoute
   AuthenticatedTrendingIndexRoute: typeof AuthenticatedTrendingIndexRoute
   AuthenticatedUpdatesIndexRoute: typeof AuthenticatedUpdatesIndexRoute
@@ -818,6 +839,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSearchIndexRoute: AuthenticatedSearchIndexRoute,
   AuthenticatedStarTrendsIndexRoute: AuthenticatedStarTrendsIndexRoute,
   AuthenticatedTagSuggestionsIndexRoute: AuthenticatedTagSuggestionsIndexRoute,
+  AuthenticatedTechProfileIndexRoute: AuthenticatedTechProfileIndexRoute,
   AuthenticatedTechStackIndexRoute: AuthenticatedTechStackIndexRoute,
   AuthenticatedTrendingIndexRoute: AuthenticatedTrendingIndexRoute,
   AuthenticatedUpdatesIndexRoute: AuthenticatedUpdatesIndexRoute,
